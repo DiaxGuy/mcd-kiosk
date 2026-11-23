@@ -33,9 +33,9 @@ COPY --from=builder /app/data ./data
 # Expose standard port for Coolify / Docker
 EXPOSE 3000
 
-# Healthcheck for Coolify container monitoring
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+# Reliable Node-native healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "require('http').get('http://127.0.0.1:' + (process.env.PORT || 3000) + '/health', (r) => {if (r.statusCode !== 200) process.exit(1)})"
 
 # Start the Node.js production server
 CMD ["npm", "start"]
