@@ -1,0 +1,197 @@
+{
+  "categories": [
+    {
+      "id": "co-nowego",
+      "name": "Co nowego / Drwal",
+      "nameEn": "What's New / Winter",
+      "nameUa": "Що нового",
+      "icon": "Flame",
+      "featured": true,
+      "tag": "ZIMA 2026"
+    },
+    {
+      "id": "burgery",
+      "name": "Burgery",
+      "nameEn": "Burgers",
+      "nameUa": "Бургери",
+      "icon": "UtensilsCrossed",
+      "featured": false
+    },
+    {
+      "id": "kurczak",
+      "name": "Kurczak",
+      "nameEn": "Chicken & Nuggets",
+      "nameUa": "Курка та нагетси",
+      "icon": "Drumstick",
+      "featured": false
+    },
+    {
+      "id": "mcwrapy-i-salatki",
+      "name": "McWrapy & Sałatki",
+      "nameEn": "McWraps & Salads",
+      "nameUa": "МакВрапи та салати",
+      "icon": "Salad",
+      "featured": false
+    },
+    {
+      "id": "frytki-i-dodatki",
+      "name": "Frytki & Dodatki",
+      "nameEn": "Fries & Sides",
+      "nameUa": "Картопля фрі та додатки",
+      "icon": "Box",
+      "featured": false
+    },
+    {
+      "id": "lody-i-desery",
+      "name": "Lody & Desery",
+      "nameEn": "Ice Cream & Desserts",
+      "nameUa": "Морозиво та десерти",
+      "icon": "IceCream",
+      "featured": false
+    },
+    {
+      "id": "mccafe",
+      "name": "McCafé",
+      "nameEn": "McCafé Coffee",
+      "nameUa": "МакКафе",
+      "icon": "Coffee",
+      "featured": false
+    },
+    {
+      "id": "napoje",
+      "name": "Napoje",
+      "nameEn": "Beverages",
+      "nameUa": "Напої",
+      "icon": "CupSoda",
+      "featured": false
+    },
+    {
+      "id": "sniadania",
+      "name": "Śniadania",
+      "nameEn": "Breakfast",
+      "nameUa": "Сніданки",
+      "icon": "Egg",
+      "featured": false
+    },
+    {
+      "id": "happy-meal",
+      "name": "Happy Meal®",
+      "nameEn": "Happy Meal®",
+      "nameUa": "Хеппі Міл®",
+      "icon": "Gift",
+      "featured": false
+    },
+    {
+      "id": "2-for-u",
+      "name": "2 for U®",
+      "nameEn": "2 for U®",
+      "nameUa": "2 for U®",
+      "icon": "BadgePercent",
+      "featured": false
+    },
+    {
+      "id": "mczestawy",
+      "name": "McZestawy",
+      "nameEn": "Extra Value Meals",
+      "nameUa": "МакМеню",
+      "icon": "Sparkles",
+      "featured": false
+    }
+  ],
+  "mealSizes": [
+    {
+      "id": "single",
+      "name": "Sam produkt",
+      "nameEn": "Single item",
+      "desc": "Tylko wybrana kanapka",
+      "priceDelta": 0
+    },
+    {
+      "id": "medium",
+      "name": "McZestaw",
+      "nameEn": "Medium Meal",
+      "desc": "Ze średnimi frytkami i napojem 0.4l",
+      "priceDelta": 9.50
+    },
+    {
+      "id": "large",
+      "name": "McZestaw Powiększony",
+      "nameEn": "Large Meal",
+      "desc": "Z dużymi frytkami i napojem 0.5l",
+      "priceDelta": 12.50
+    }
+  ],
+  "sides": [
+    { "id": "fries_med", "name": "Średnie frytki", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20261104150338/pl10-p00001662-drwal-2026-na-www-540x450px-frytki-zakrecone-z-sosem.jpg" },
+    { "id": "fries_curly", "name": "Frytki Zakręcone z sosem", "extraPrice": 3.50, "image": "https://cdn.mcdonalds.pl/uploads/20261104150338/pl10-p00001662-drwal-2026-na-www-540x450px-frytki-zakrecone-z-sosem.jpg" },
+    { "id": "side_salad", "name": "Mała sałatka z sosem", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png" },
+    { "id": "side_apples", "name": "Cząstki jabłek", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png" },
+    { "id": "side_carrots", "name": "Chrupiące marchewki", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png" }
+  ],
+  "drinks": [
+    { "id": "cola", "name": "Coca-Cola®", "extraPrice": 0 },
+    { "id": "cola_zero", "name": "Coca-Cola® Zero Cukru", "extraPrice": 0 },
+    { "id": "fanta", "name": "Fanta®", "extraPrice": 0 },
+    { "id": "sprite", "name": "Sprite®", "extraPrice": 0 },
+    { "id": "lipton", "name": "Lipton® Ice Tea Cytryna", "extraPrice": 0 },
+    { "id": "water_still", "name": "Woda Kropla Beskidu (niegazowana)", "extraPrice": 0 },
+    { "id": "water_sparkling", "name": "Woda Kropla Delice (gazowana)", "extraPrice": 0 },
+    { "id": "juice_orange", "name": "Sok Pomarańczowy Cappy®", "extraPrice": 1.50 },
+    { "id": "juice_apple", "name": "Sok Jabłkowy Cappy®", "extraPrice": 1.50 },
+    { "id": "coffee_black", "name": "Kawa Czarna", "extraPrice": 2.00 },
+    { "id": "coffee_milk", "name": "Kawa z Mlekiem", "extraPrice": 2.00 }
+  ],
+  "ingredients": [
+    { "id": "extra_patty", "name": "Dodatkowa wołowina 100%", "type": "add", "price": 7.00 },
+    { "id": "extra_bacon", "name": "Chrupiący bekon", "type": "add", "price": 3.50 },
+    { "id": "extra_cheese", "name": "Topiony ser cheddar", "type": "add", "price": 2.50 },
+    { "id": "extra_jalapeno", "name": "Ostre papryczki Jalapeno", "type": "add", "price": 2.00 },
+    { "id": "extra_sauce", "name": "Dodatkowa porcja sosu", "type": "add", "price": 1.50 },
+    { "id": "no_pickles", "name": "Bez pikli (ogórków)", "type": "remove", "price": 0 },
+    { "id": "no_onions", "name": "Bez cebuli", "type": "remove", "price": 0 },
+    { "id": "no_sauce", "name": "Bez sosu", "type": "remove", "price": 0 },
+    { "id": "no_cheese", "name": "Bez sera cheddar", "type": "remove", "price": 0 },
+    { "id": "no_lettuce", "name": "Bez sałaty", "type": "remove", "price": 0 }
+  ],
+  "sauces": [
+    { "id": "sauce_sweet_sour", "name": "Sos Słodko-kwaśny", "price": 2.50 },
+    { "id": "sauce_garlic", "name": "Sos Czosnkowy", "price": 2.50 },
+    { "id": "sauce_bbq", "name": "Sos Barbecue", "price": 2.50 },
+    { "id": "sauce_mayo_sriracha", "name": "Sos Mayo Sriracha", "price": 2.50 },
+    { "id": "sauce_blue_cheese", "name": "Sos Blue Cheese", "price": 2.50 },
+    { "id": "sauce_sour_cream", "name": "Sos Śmietanowy", "price": 2.50 },
+    { "id": "sauce_honey_mustard", "name": "Sos Miodowo-Musztardowy", "price": 2.50 },
+    { "id": "sauce_ketchup", "name": "Ketchup", "price": 2.50 },
+    { "id": "sauce_cranberry", "name": "Dip Żurawinowy", "price": 2.50 }
+  ],
+  "upsellItems": [
+    {
+      "id": "ciastko-apple-pie",
+      "name": "Ciastko Apple Pie",
+      "price": 7.90,
+      "image": "https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png",
+      "desc": "Chrupiące, gorące ciastko z jabłkami i cynamonem"
+    },
+    {
+      "id": "mcflurry-zimowe-snickers",
+      "name": "McFlurry® Zimowe Snickers®",
+      "price": 13.90,
+      "image": "https://cdn.mcdonalds.pl/uploads/20261105100631/pl10-p00001603-001-mcd-mcflurry-zimowe-snickers-na-www-540x450px-mcflurry-snickers-generyczny.jpg",
+      "desc": "Aksamitne lody waniliowe z kawałkami Snickers®"
+    },
+    {
+      "id": "piernikowa-latte",
+      "name": "Piernikowa Latte",
+      "price": 14.90,
+      "image": "https://cdn.mcdonalds.pl/uploads/20241010120620/355717-mccafe-jesien-2024-na-www-540x450px-piernikowe-latte.jpg",
+      "desc": "Zimowa rozgrzewająca kawa z korzennym syropem piernikowym"
+    },
+    {
+      "id": "frytki-zakrecone-z-sosem",
+      "name": "Frytki Zakręcone z sosem",
+      "price": 13.90,
+      "image": "https://cdn.mcdonalds.pl/uploads/20261104150338/pl10-p00001662-drwal-2026-na-www-540x450px-frytki-zakrecone-z-sosem.jpg",
+      "desc": "Chrupiące zakręcone frytki ziemniaczane z aksamitnym dipem"
+    }
+  ]
+}
