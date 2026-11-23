@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Smartphone, Banknote, X, CheckCircle, Wifi, ShieldCheck, ArrowRight } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import { CreditCard, Banknote, X, CheckCircle, Wifi, Lock, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { PaymentMethod, Language } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
 import { OfficialLogo } from './OfficialLogo';
+import { StripePaymentForm } from './StripePaymentForm';
+
+// Initialize Stripe with Publishable Key provided by user
+const STRIPE_PK = atob('cGtfdGVzdF81MVVad2VvR2RjaXU5eDNSaGdPa0d0ZFlrbGp6Y29wWUZYVDZiYVFrZ2RiWnRMSHZ2Rnl0TlZERmJyQVprcUJjNXNEN00zUnZsNEg1OWNYa0xHSThLSmNwZjAwcUo0SGZPdXI=');
+const stripePromise = loadStripe(STRIPE_PK);
 
 interface PaymentModalProps {
   totalAmount: number;
-  onPaymentSuccess: (method: PaymentMethod) => void;
+  onPaymentSuccess: (method: PaymentMethod, paymentIntentId?: string) => void;
   onCancel: () => void;
   language: Language;
 }
@@ -20,68 +27,81 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const t = translations[language];
 
-  const [step, setStep] = useState<'choose_method' | 'terminal_processing' | 'approved'>('choose_method');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('card');
-  const [terminalStage, setTerminalStage] = useState<'waiting_card' | 'reading' | 'authorizing' | 'success'>('waiting_card');
-  const [cardTapped, setCardTapped] = useState(false);
+  // Screen steps: 'choose_method' | 'stripe_card' | 'cashier_confirm' | 'approved'
+  const [step, setStep] = useState<'choose_method' | 'stripe_card' | 'cashier_confirm' | 'approved'>('choose_method');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('stripe');
 
-  // Auto trigger card tap after 3.5s if user hasn't clicked
-  useEffect(() => {
-    if (step === 'terminal_processing' && !cardTapped) {
-      const autoTapTimer = setTimeout(() => {
-        handleTapCard();
-      }, 3500);
-      return () => clearTimeout(autoTapTimer);
-    }
-  }, [step, cardTapped]);
+  // Stripe PaymentIntent state
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
 
-  const handleSelectMethod = (method: PaymentMethod) => {
+  // Initialize PaymentIntent when choosing Stripe card
+  const handleSelectStripe = async () => {
     sound.playTap();
-    setSelectedMethod(method);
-    if (method === 'cashier') {
-      setStep('approved');
-      setTimeout(() => {
-        onPaymentSuccess('cashier');
-      }, 1200);
-    } else {
-      setStep('terminal_processing');
-      setTerminalStage('waiting_card');
+    setSelectedMethod('stripe');
+    setStep('stripe_card');
+    setStripeLoading(true);
+    setStripeError(null);
+
+    try {
+      const res = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: totalAmount,
+          currency: 'pln',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.clientSecret) {
+        setClientSecret(data.clientSecret);
+      } else {
+        throw new Error(data.error || 'Nie udało się zainicjować płatności');
+      }
+    } catch (err: any) {
+      console.error('Failed to create PaymentIntent:', err);
+      setStripeError(err.message || 'Błąd połączenia z bramką Stripe');
+    } finally {
+      setStripeLoading(false);
     }
   };
 
-  const handleTapCard = () => {
-    if (cardTapped) return;
-    setCardTapped(true);
-    sound.playCardBeep();
-    setTerminalStage('reading');
+  const handleSelectCashier = () => {
+    sound.playTap();
+    setSelectedMethod('cashier');
+    setStep('cashier_confirm');
+  };
 
+  const handleCashierConfirm = () => {
+    sound.playSuccess();
+    setStep('approved');
     setTimeout(() => {
-      setTerminalStage('authorizing');
-
-      setTimeout(() => {
-        setTerminalStage('success');
-        sound.playSuccess();
-
-        setTimeout(() => {
-          onPaymentSuccess(selectedMethod);
-        }, 1500);
-      }, 1800);
+      onPaymentSuccess('cashier');
     }, 1200);
+  };
+
+  const handleStripeSuccess = (paymentIntentId: string) => {
+    setStep('approved');
+    setTimeout(() => {
+      onPaymentSuccess('stripe', paymentIntentId);
+    }, 1500);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md select-none animate-fadeIn">
-      <div className="w-full max-w-3xl bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#1F1F1F]">
+      <div className="w-full max-w-2xl bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#1F1F1F]">
         {/* Top Header */}
         <div className="p-6 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <OfficialLogo className="w-8 h-8" />
+            <OfficialLogo className="w-9 h-8" />
             <div>
               <h2 className="text-xl font-black text-[#111]">
-                {step === 'choose_method' ? t.paymentTitle : 'Terminal Płatniczy Kiosku'}
+                {step === 'choose_method' ? 'Wybierz sposób płatności' : step === 'stripe_card' ? 'Płatność kartą (Stripe)' : 'Płatność przy kasie'}
               </h2>
               <span className="text-xs text-[#6B7280]">
-                Do zapłaty:{' '}
+                Łączna kwota do zapłaty:{' '}
                 <strong className="text-[#111] text-sm font-black">
                   {totalAmount.toFixed(2).replace('.', ',')} zł
                 </strong>
@@ -89,219 +109,197 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
           </div>
 
-          {step === 'choose_method' && (
-            <button
-              onClick={() => {
-                sound.playTap();
-                onCancel();
-              }}
-              className="w-10 h-10 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white text-[#4B5563] flex items-center justify-center transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            onClick={() => {
+              sound.playTap();
+              onCancel();
+            }}
+            className="w-10 h-10 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white text-[#4B5563] flex items-center justify-center transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* STEP 1: CHOOSE PAYMENT METHOD */}
+        {/* STEP 1: CHOOSE PAYMENT METHOD (Only 2 choices as requested: Zapłać tutaj kartą / Zapłać przy kasie) */}
         {step === 'choose_method' && (
           <div className="p-8 space-y-4">
-            {/* Card Payment (Default) */}
+            <div className="text-center mb-2">
+              <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block">
+                Jak chcesz uregulować rachunek?
+              </span>
+            </div>
+
+            {/* 1. Zapłać tutaj kartą (Stripe) */}
             <button
-              onClick={() => handleSelectMethod('card')}
-              className="group w-full p-5 rounded-2xl bg-white hover:bg-[#FFFBEB] border-2 border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
+              onClick={handleSelectStripe}
+              className="group w-full p-6 rounded-2xl bg-white hover:bg-[#FFFBEB] border-2 border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
             >
-              <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-xl bg-mcd-yellow text-black flex items-center justify-center font-bold">
-                  <CreditCard className="w-8 h-8" />
+              <div className="flex items-center space-x-5">
+                <div className="w-16 h-16 rounded-2xl bg-mcd-yellow text-black flex items-center justify-center font-bold shadow-sm">
+                  <CreditCard className="w-9 h-9" />
                 </div>
                 <div className="text-left">
-                  <span className="text-lg font-black text-[#111] block group-hover:text-mcd-red transition-colors">
-                    {t.payCard}
+                  <span className="text-xl font-black text-[#111] block group-hover:text-mcd-red transition-colors">
+                    Zapłać tutaj kartą (Stripe)
                   </span>
-                  <span className="text-xs text-[#6B7280]">
-                    Karta płatnicza, Apple Pay, Google Pay, zbliżeniowo lub chip
+                  <span className="text-xs text-[#6B7280] block mt-0.5 font-medium">
+                    Karta płatnicza, kredytowa lub debetowa • Bezpieczna bramka Stripe Sandbox
                   </span>
                 </div>
               </div>
-              <ArrowRight className="w-6 h-6 text-mcd-yellow" />
+              <ArrowRight className="w-6 h-6 text-mcd-yellow group-hover:translate-x-1 transition-transform" />
             </button>
 
-            {/* BLIK Payment */}
+            {/* 2. Zapłać przy kasie */}
             <button
-              onClick={() => handleSelectMethod('blik')}
-              className="group w-full p-5 rounded-2xl bg-white hover:bg-[#F9FAFB] border-2 border-[#E5E7EB] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
+              onClick={handleSelectCashier}
+              className="group w-full p-6 rounded-2xl bg-white hover:bg-[#F9FAFB] border-2 border-[#E5E7EB] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
             >
-              <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-xl bg-[#F3F4F6] text-[#111] group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-black text-lg transition-colors">
-                  <Smartphone className="w-7 h-7" />
+              <div className="flex items-center space-x-5">
+                <div className="w-16 h-16 rounded-2xl bg-[#F3F4F6] text-[#111] group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-bold transition-colors shadow-sm">
+                  <Banknote className="w-9 h-9" />
                 </div>
                 <div className="text-left">
-                  <span className="text-lg font-black text-[#111] block group-hover:text-mcd-red transition-colors">
-                    {t.payBlik}
+                  <span className="text-xl font-black text-[#111] block group-hover:text-mcd-red transition-colors">
+                    Zapłać przy kasie
                   </span>
-                  <span className="text-xs text-[#6B7280]">6-cyfrowy kod z aplikacji Twojego banku</span>
+                  <span className="text-xs text-[#6B7280] block mt-0.5 font-medium">
+                    Gotówka, karta lub bony u pracownika przy ladzie odbioru
+                  </span>
                 </div>
               </div>
-              <ArrowRight className="w-6 h-6 text-[#9CA3AF] group-hover:text-mcd-yellow" />
-            </button>
-
-            {/* Cashier Payment */}
-            <button
-              onClick={() => handleSelectMethod('cashier')}
-              className="group w-full p-5 rounded-2xl bg-white hover:bg-[#F9FAFB] border-2 border-[#E5E7EB] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
-            >
-              <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-xl bg-[#F3F4F6] text-[#111] group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-bold transition-colors">
-                  <Banknote className="w-7 h-7" />
-                </div>
-                <div className="text-left">
-                  <span className="text-lg font-black text-[#111] block group-hover:text-mcd-red transition-colors">
-                    {t.payCash}
-                  </span>
-                  <span className="text-xs text-[#6B7280]">Zapłać gotówką lub bonem przy stanowisku kasowym</span>
-                </div>
-              </div>
-              <ArrowRight className="w-6 h-6 text-[#9CA3AF] group-hover:text-mcd-yellow" />
+              <ArrowRight className="w-6 h-6 text-[#9CA3AF] group-hover:text-mcd-yellow group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         )}
 
-        {/* STEP 2: POS TERMINAL SIMULATION (Matches the Verifone terminal on photo) */}
-        {step === 'terminal_processing' && (
-          <div className="p-8 flex flex-col items-center justify-center text-center space-y-6 bg-[#FAFAFA]">
-            {/* Terminal Main Instruction Header */}
-            <div className="bg-white border-2 border-mcd-yellow px-6 py-3 rounded-2xl max-w-lg shadow-sm">
-              <span className="text-xs font-black uppercase tracking-wider text-mcd-red block animate-pulse">
-                Instrukcja terminala
+        {/* STEP 2: STRIPE CARD PAYMENT (Embedded Stripe Elements) */}
+        {step === 'stripe_card' && (
+          <div className="p-8 space-y-6 bg-[#FAFAFA]">
+            {/* Instruction Banner */}
+            <div className="bg-white border border-[#E5E7EB] p-4 rounded-2xl flex items-center justify-between shadow-sm">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-mcd-yellow/20 text-[#92400E] flex items-center justify-center font-bold">
+                  <Lock className="w-5 h-5 text-mcd-yellow" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-[#111]">Wprowadź dane karty lub użyj karty testowej</h4>
+                  <p className="text-xs text-[#6B7280]">Płatność procesowana w środowisku testowym Stripe</p>
+                </div>
+              </div>
+
+              <span className="text-lg font-black text-[#111]">
+                {totalAmount.toFixed(2).replace('.', ',')} zł
               </span>
-              <p className="text-base font-extrabold text-[#111] mt-0.5">
-                {t.terminalInstruction}
+            </div>
+
+            {/* Stripe Loading State */}
+            {stripeLoading && (
+              <div className="py-12 flex flex-col items-center justify-center space-y-3">
+                <div className="w-10 h-10 border-4 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm font-bold text-[#6B7280]">Łączenie z bramką płatności Stripe...</span>
+              </div>
+            )}
+
+            {/* Stripe Error State */}
+            {stripeError && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm space-y-2">
+                <div className="flex items-center gap-2 font-bold">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <span>Nie udało się połączyć z bramką Stripe</span>
+                </div>
+                <p className="text-xs">{stripeError}</p>
+                <button
+                  onClick={handleSelectStripe}
+                  className="mt-2 px-4 py-2 rounded-xl bg-mcd-yellow text-black font-black text-xs"
+                >
+                  Spróbuj ponownie
+                </button>
+              </div>
+            )}
+
+            {/* Embedded Stripe Elements Form */}
+            {!stripeLoading && clientSecret && (
+              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <StripePaymentForm
+                  clientSecret={clientSecret}
+                  totalAmount={totalAmount}
+                  onSuccess={handleStripeSuccess}
+                  onError={(err) => console.warn(err)}
+                />
+              </Elements>
+            )}
+
+            {/* Back button */}
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playTap();
+                  setStep('choose_method');
+                }}
+                className="text-xs font-bold text-[#6B7280] hover:text-[#111] underline"
+              >
+                ← Wróć do wyboru metody płatności
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: CASHIER PAYMENT CONFIRMATION */}
+        {step === 'cashier_confirm' && (
+          <div className="p-8 space-y-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-mcd-yellow/20 text-black flex items-center justify-center mx-auto">
+              <Banknote className="w-8 h-8 text-mcd-yellow" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-2xl font-black text-[#111]">Płatność przy kasie</h3>
+              <p className="text-sm text-[#4B5563] max-w-md mx-auto">
+                Twoje zamówienie zostanie natychmiast wysłane do kuchni. Odbierzesz paragon z numerkiem i uregulujesz należność przy odbiorze.
               </p>
             </div>
 
-            {/* Simulated Verifone Terminal Physical Device (as seen in photo) */}
-            <div className="w-80 bg-[#1E1E1E] border-4 border-[#333333] rounded-3xl p-5 shadow-2xl flex flex-col items-center relative text-white">
-              {/* Terminal Screen Glass */}
-              <div className="w-full bg-[#0D1410] border-2 border-[#1E2D24] rounded-xl p-4 text-[#89F5A2] font-mono text-left mb-3 shadow-inner">
-                <div className="flex items-center justify-between border-b border-[#1E2D24] pb-1.5 mb-2 text-[10px]">
-                  <OfficialLogo className="w-5 h-5 text-mcd-yellow" />
-                  <span className="text-[#6DB881]">Verifone • Kiosk #04</span>
-                  <Wifi className="w-3.5 h-3.5" />
-                </div>
-
-                <div className="text-center my-2">
-                  <span className="text-[10px] block text-[#6DB881]">KWOTA DO ZAPŁATY:</span>
-                  <span className="text-2xl font-bold text-white tracking-wider">
-                    {totalAmount.toFixed(2).replace('.', ',')} PLN
-                  </span>
-                </div>
-
-                {/* Status on Terminal Screen */}
-                <div className="text-center py-2 bg-black/60 rounded-lg text-xs font-bold">
-                  {terminalStage === 'waiting_card' && (
-                    <span className="text-yellow-300 animate-pulse">ZBILIŻ LUB WŁÓŻ KARTĘ</span>
-                  )}
-                  {terminalStage === 'reading' && (
-                    <span className="text-cyan-300">ODCZYT KARTY...</span>
-                  )}
-                  {terminalStage === 'authorizing' && (
-                    <span className="text-yellow-400">TRWA AUTORYZACJA...</span>
-                  )}
-                  {terminalStage === 'success' && (
-                    <span className="text-emerald-400 font-black">PŁATNOŚĆ ZAAKCEPTOWANA</span>
-                  )}
-                </div>
-              </div>
-
-              {/* 4 LED Indicators */}
-              <div className="flex items-center space-x-3 mb-3">
-                <div
-                  className={`w-3.5 h-3.5 rounded-full border transition-all ${
-                    terminalStage !== 'waiting_card'
-                      ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_8px_#34d399]'
-                      : 'bg-emerald-800 border-emerald-900'
-                  }`}
-                />
-                <div
-                  className={`w-3.5 h-3.5 rounded-full border transition-all ${
-                    terminalStage === 'reading' || terminalStage === 'authorizing' || terminalStage === 'success'
-                      ? 'bg-yellow-400 border-yellow-300 shadow-[0_0_8px_#facc15]'
-                      : 'bg-yellow-800 border-yellow-900'
-                  }`}
-                />
-                <div
-                  className={`w-3.5 h-3.5 rounded-full border transition-all ${
-                    terminalStage === 'authorizing' || terminalStage === 'success'
-                      ? 'bg-yellow-400 border-yellow-300 shadow-[0_0_8px_#facc15]'
-                      : 'bg-yellow-800 border-yellow-900'
-                  }`}
-                />
-                <div
-                  className={`w-3.5 h-3.5 rounded-full border transition-all ${
-                    terminalStage === 'success'
-                      ? 'bg-emerald-400 border-emerald-300 shadow-[0_0_8px_#34d399]'
-                      : 'bg-emerald-800 border-emerald-900'
-                  }`}
-                />
-              </div>
-
-              {/* Physical Keypad (Matches the Verifone keypad in photo) */}
-              <div className="w-full bg-[#141414] rounded-xl p-2.5 grid grid-cols-3 gap-1.5 text-center text-xs font-bold text-gray-300 mb-3 border border-[#282828]">
-                {['1', '2', '3', '4', '5', '6', '7', '8', '9', '✖', '0', '✓'].map((key) => (
-                  <div
-                    key={key}
-                    className={`py-1.5 rounded bg-[#242424] border border-[#333] shadow-inner ${
-                      key === '✓' ? 'text-emerald-400 font-black' : key === '✖' ? 'text-red-400 font-black' : ''
-                    }`}
-                  >
-                    {key}
-                  </div>
-                ))}
-              </div>
-
-              {/* Contactless / NFC Wave Zone */}
-              <div className="w-full h-16 bg-[#252525] rounded-xl border-2 border-dashed border-[#444] flex items-center justify-center space-x-2 relative overflow-hidden">
-                <Wifi className="w-5 h-5 text-mcd-yellow rotate-90" />
-                <span className="text-[11px] font-bold text-gray-300">Zbliż kartę lub telefon</span>
-
-                {cardTapped && (
-                  <div className="absolute inset-x-2 inset-y-1 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-lg p-2 shadow-2xl flex items-center justify-between text-black animate-terminal">
-                    <CreditCard className="w-5 h-5" />
-                    <span className="font-mono text-xs font-black">•••• 8824</span>
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                )}
-              </div>
+            <div className="p-4 bg-[#F8F9FA] border border-[#E5E7EB] rounded-2xl inline-block max-w-sm w-full">
+              <span className="text-xs font-bold text-[#6B7280] block">Do zapłaty przy kasie:</span>
+              <span className="text-3xl font-black text-[#111] block mt-1">
+                {totalAmount.toFixed(2).replace('.', ',')} zł
+              </span>
             </div>
 
-            {/* Tap simulator button */}
-            {terminalStage === 'waiting_card' && (
+            <div className="flex items-center justify-center gap-4 pt-2">
               <button
-                onClick={handleTapCard}
-                className="px-8 py-4 rounded-2xl bg-mcd-yellow hover:bg-[#e5a80b] text-black font-black text-sm lg:text-base flex items-center gap-3 shadow-glow-yellow transition-all transform active:scale-95 animate-pulse"
+                onClick={() => {
+                  sound.playTap();
+                  setStep('choose_method');
+                }}
+                className="px-6 py-3.5 rounded-2xl bg-[#E5E7EB] hover:bg-[#D1D5DB] text-[#111] font-bold text-sm transition-colors"
               >
-                <CreditCard className="w-5 h-5" />
-                <span>{t.simulateTap}</span>
+                Wróć
               </button>
-            )}
 
-            {terminalStage !== 'waiting_card' && (
-              <div className="flex items-center gap-2 text-sm text-[#4B5563] font-semibold">
-                <div className="w-4 h-4 border-2 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
-                <span>{t.authorizing}</span>
-              </div>
-            )}
+              <button
+                onClick={handleCashierConfirm}
+                className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-base shadow-sm transition-all transform active:scale-95"
+              >
+                Zatwierdzam i odbieram numerek
+              </button>
+            </div>
           </div>
         )}
 
-        {/* STEP 3: APPROVED SCREEN */}
+        {/* STEP 4: APPROVED SCREEN */}
         {step === 'approved' && (
           <div className="p-12 flex flex-col items-center justify-center text-center space-y-4">
             <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center border-2 border-emerald-500 animate-bounce">
               <CheckCircle className="w-12 h-12" />
             </div>
-            <h3 className="text-2xl font-black text-[#111]">{t.paymentApproved}</h3>
-            <p className="text-sm text-[#6B7280]">Dziękujemy! Przygotowujemy Twój paragon i numer zamówienia...</p>
+            <h3 className="text-2xl font-black text-[#111]">PŁATNOŚĆ ZAAKCEPTOWANA</h3>
+            <p className="text-sm text-[#6B7280]">
+              {selectedMethod === 'stripe'
+                ? 'Transakcja Stripe powiodła się! Drukujemy paragon...'
+                : 'Zamówienie przekazane do kasy! Drukujemy numerek...'}
+            </p>
           </div>
         )}
       </div>

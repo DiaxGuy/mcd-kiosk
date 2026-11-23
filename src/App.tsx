@@ -23,6 +23,7 @@ import { UpsellModal } from './components/UpsellModal';
 import { PaymentModal } from './components/PaymentModal';
 import { OrderConfirmationScreen } from './components/OrderConfirmationScreen';
 import { AttractScreen } from './components/AttractScreen';
+import { AddedToOrderModal } from './components/AddedToOrderModal';
 import { translations } from './utils/translations';
 import { sound } from './utils/audio';
 import { Search, Sparkles, QrCode, Smartphone, ShoppingBag, ArrowRight, RotateCcw, Accessibility } from 'lucide-react';
@@ -53,6 +54,8 @@ export const App: React.FC = () => {
   const [showUpsell, setShowUpsell] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
+  const [showAddedModal, setShowAddedModal] = useState(false);
 
   const t = translations[language];
 
@@ -146,6 +149,8 @@ export const App: React.FC = () => {
   // Cart actions
   const handleAddToCart = (item: CartItem) => {
     setCart((prev) => [...prev, item]);
+    setLastAddedItem(item);
+    setShowAddedModal(true);
   };
 
   const handleUpdateQuantity = (cartId: string, delta: number) => {
@@ -194,6 +199,8 @@ export const App: React.FC = () => {
         totalPrice: item.price,
       };
       setCart((prev) => [...prev, directCartItem]);
+      setLastAddedItem(directCartItem);
+      setShowAddedModal(true);
     }
   };
 
@@ -219,7 +226,7 @@ export const App: React.FC = () => {
     setShowPayment(true);
   };
 
-  const handlePaymentSuccess = async (paymentMethod: PaymentMethod) => {
+  const handlePaymentSuccess = async (paymentMethod: PaymentMethod, paymentIntentId?: string) => {
     setShowPayment(false);
 
     const totalAmount = cart.reduce((sum, i) => sum + i.totalPrice, 0);
@@ -232,6 +239,7 @@ export const App: React.FC = () => {
           items: cart,
           orderType,
           paymentMethod,
+          paymentIntentId,
           totalAmount,
         }),
       });
@@ -252,6 +260,7 @@ export const App: React.FC = () => {
         items: cart,
         totalAmount,
         paymentMethod,
+        paymentIntentId,
         paymentStatus: 'completed',
         kioskId: 'K-04',
         createdAt: new Date().toISOString(),
@@ -536,6 +545,21 @@ export const App: React.FC = () => {
           totalAmount={cartTotalAmount}
           onPaymentSuccess={handlePaymentSuccess}
           onCancel={() => setShowPayment(false)}
+          language={language}
+        />
+      )}
+
+      {/* 4. Added to Order Modal (Torba z cyferką + Happy mascot) */}
+      {showAddedModal && lastAddedItem && (
+        <AddedToOrderModal
+          lastAddedItem={lastAddedItem}
+          totalCartCount={cart.reduce((sum, item) => sum + item.quantity, 0)}
+          totalAmount={cartTotalAmount}
+          onContinue={() => setShowAddedModal(false)}
+          onCheckout={() => {
+            setShowAddedModal(false);
+            handleStartCheckout();
+          }}
           language={language}
         />
       )}

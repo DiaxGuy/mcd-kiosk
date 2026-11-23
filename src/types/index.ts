@@ -1,6 +1,6 @@
 export type Language = 'pl' | 'en' | 'ua';
 export type OrderType = 'dine_in' | 'take_away';
-export type PaymentMethod = 'card' | 'blik' | 'cashier';
+export type PaymentMethod = 'stripe' | 'cashier' | 'card' | 'blik';
 
 export interface Category {
   id: string;
@@ -86,7 +86,8 @@ export interface Order {
   items: CartItem[];
   totalAmount: number;
   paymentMethod: PaymentMethod;
-  paymentStatus: 'pending' | 'completed' | 'failed';
+  paymentIntentId?: string | null;
+  paymentStatus: 'completed' | 'pending';
   kioskId: string;
   createdAt: string;
   receiptNumber: string;

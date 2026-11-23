@@ -192,11 +192,16 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
               <div className="flex justify-between text-[10px] text-[#555]">
                 <span>Płatność:</span>
                 <span className="font-bold uppercase">
-                  {order.paymentMethod === 'card' ? 'KARTA (ZATWIERDZONA)' : order.paymentMethod}
+                  {order.paymentMethod === 'stripe'
+                    ? 'KARTA STRIPE (ZATWIERDZONA)'
+                    : order.paymentMethod === 'cashier'
+                    ? 'PŁATNOŚĆ PRZY KASIE'
+                    : order.paymentMethod}
                 </span>
               </div>
               <div className="text-[9px] text-[#777] pt-1">
                 Nr transakcji: {order.receiptNumber}
+                {order.paymentIntentId && ` • Stripe: ${order.paymentIntentId.slice(0, 16)}...`}
               </div>
             </div>
 
