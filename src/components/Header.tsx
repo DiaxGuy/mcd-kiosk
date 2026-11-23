@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Globe, Utensils, ShoppingBag, Eye, Sparkles } from 'lucide-react';
+import { Clock, Globe, Utensils, ShoppingBag, Accessibility } from 'lucide-react';
 import { Language, OrderType } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
+import { OfficialLogo } from './OfficialLogo';
 
 interface HeaderProps {
   orderType: OrderType;
@@ -10,7 +11,7 @@ interface HeaderProps {
   language: Language;
   setLanguage: (lang: Language) => void;
   onReset: () => void;
-  itemsCount: number;
+  currentCategoryTitle: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   language,
   setLanguage,
   onReset,
-  itemsCount,
+  currentCategoryTitle,
 }) => {
   const t = translations[language];
   const [time, setTime] = useState('');
@@ -47,103 +48,97 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="h-16 bg-[#181818] border-b border-[#2C2C2C] px-6 flex items-center justify-between select-none z-20 shrink-0">
-      {/* Left: McDonald's Golden Arches & Kiosk badge */}
-      <div className="flex items-center space-x-4">
+    <header className="h-20 bg-white border-b border-[#E5E7EB] px-8 flex items-center justify-between select-none z-20 shrink-0 shadow-sm">
+      {/* Left: Official McDonald's Golden Arches & Category Header (as in photo) */}
+      <div className="flex items-center space-x-6">
         <button
           onClick={() => {
             sound.playTap();
             onReset();
           }}
-          className="flex items-center space-x-3 group transition-transform active:scale-95"
-          title="Powrót do ekranu głównego"
+          className="flex items-center space-x-3 transition-transform active:scale-95 group"
+          title="Powrót do ekranu startowego"
         >
-          {/* McDonald's Iconic Golden Arches Logo */}
-          <div className="w-10 h-10 bg-mcd-red rounded-lg flex items-center justify-center p-1.5 shadow-md group-hover:brightness-110">
-            <svg viewBox="0 0 109 100" className="w-full h-full fill-mcd-yellow">
-              <path d="M54.3 98.7C42 36.6 24.3 6.6 20.3 0c-4 6.6-21.7 36.6-34 98.7h18.3c8.1-42.5 15.7-72.3 15.7-72.3s7.6 29.8 15.7 72.3h18.3zm34.4 0c-12.3-62.1-30-92.1-34-98.7-4 6.6-21.7 36.6-34 98.7h18.3c8.1-42.5 15.7-72.3 15.7-72.3s7.6 29.8 15.7 72.3h18.3z" transform="translate(14, 0) scale(0.9)"/>
-            </svg>
-          </div>
-          <div className="text-left">
-            <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-1.5">
-              McDonald's <span className="text-xs px-2 py-0.5 rounded bg-mcd-yellow text-black font-black uppercase">KIOSK</span>
-            </span>
-            <span className="text-xs text-[#8E8E8E] block">{t.kioskId}</span>
-          </div>
+          {/* Official Golden Arches "M" */}
+          <OfficialLogo className="w-12 h-11 text-mcd-yellow filter drop-shadow-sm group-hover:scale-105 transition-transform" />
         </button>
 
-        {/* Order Mode Switcher */}
+        <div className="border-l border-[#E5E7EB] pl-6 py-1">
+          <h1 className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-tight">
+            {currentCategoryTitle}
+          </h1>
+          <p className="text-xs text-[#6B7280] font-medium">
+            Wybierz swoje ulubione pozycje z menu poniżej
+          </p>
+        </div>
+      </div>
+
+      {/* Right: Controls (Dining type, Language, Accessibility, Clock) */}
+      <div className="flex items-center space-x-3">
+        {/* Dining Mode Button */}
         <button
           onClick={toggleOrderType}
-          className="ml-4 px-4 py-1.5 rounded-full bg-[#262626] border border-[#3A3A3A] hover:border-mcd-yellow text-xs font-bold text-white flex items-center gap-2 transition-all active:scale-95"
+          className="px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] border border-[#D1D5DB] text-xs font-bold text-[#1F1F1F] flex items-center gap-2 transition-all active:scale-95"
         >
           {orderType === 'dine_in' ? (
             <>
-              <Utensils className="w-3.5 h-3.5 text-mcd-yellow" />
+              <Utensils className="w-4 h-4 text-mcd-yellow" />
               <span>{t.eatIn}</span>
             </>
           ) : (
             <>
-              <ShoppingBag className="w-3.5 h-3.5 text-mcd-yellow" />
+              <ShoppingBag className="w-4 h-4 text-mcd-yellow" />
               <span>{t.takeAway}</span>
             </>
           )}
-          <span className="text-[10px] text-mcd-yellow underline ml-1">Zmień</span>
+          <span className="text-[10px] text-[#4B5563] underline ml-1">Zmień</span>
         </button>
-      </div>
 
-      {/* Center: Promo / Season Banner */}
-      <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-[#222222] border border-[#333333] text-xs text-white">
-        <Sparkles className="w-3.5 h-3.5 text-mcd-yellow animate-pulse" />
-        <span className="font-medium">Zimowa edycja: <strong className="text-mcd-yellow">Burger Drwala</strong> i rozgrzewające McCafé!</span>
-      </div>
-
-      {/* Right: Controls & Info */}
-      <div className="flex items-center space-x-3">
-        {/* Clock */}
-        <div className="hidden sm:flex items-center space-x-1.5 text-sm font-semibold text-[#D1D1D1] bg-[#222222] px-3 py-1.5 rounded-lg border border-[#333333]">
-          <Clock className="w-4 h-4 text-mcd-yellow" />
-          <span>{time}</span>
-        </div>
-
-        {/* Accessibility Button */}
+        {/* Accessibility Button (Icon with circle as on photo) */}
         <button
           onClick={toggleAccessible}
-          className={`p-2 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-            accessibleMode ? 'bg-mcd-yellow text-black border-mcd-yellow' : 'bg-[#222222] text-[#D1D1D1] border-[#333333] hover:border-[#555]'
+          className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+            accessibleMode
+              ? 'bg-mcd-yellow text-black border-mcd-yellow shadow-md'
+              : 'bg-[#F3F4F6] text-[#4B5563] border-[#D1D5DB] hover:bg-[#E5E7EB]'
           }`}
-          title="Tryb ułatwienia dostępu"
+          title="Ułatwienia dostępu"
         >
-          <Eye className="w-4 h-4" />
-          <span className="hidden md:inline">Ułatwienia</span>
+          <Accessibility className="w-5 h-5 stroke-[2.2]" />
         </button>
 
         {/* Language Selector */}
-        <div className="flex items-center bg-[#222222] rounded-lg border border-[#333333] p-0.5">
+        <div className="flex items-center bg-[#F3F4F6] rounded-full border border-[#D1D5DB] p-1">
           <button
             onClick={() => { sound.playTap(); setLanguage('pl'); }}
-            className={`px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1 transition-colors ${
-              language === 'pl' ? 'bg-mcd-yellow text-black' : 'text-[#A0A0A0] hover:text-white'
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
+              language === 'pl' ? 'bg-mcd-yellow text-black shadow-sm' : 'text-[#6B7280] hover:text-[#111]'
             }`}
           >
             🇵🇱 PL
           </button>
           <button
             onClick={() => { sound.playTap(); setLanguage('en'); }}
-            className={`px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1 transition-colors ${
-              language === 'en' ? 'bg-mcd-yellow text-black' : 'text-[#A0A0A0] hover:text-white'
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
+              language === 'en' ? 'bg-mcd-yellow text-black shadow-sm' : 'text-[#6B7280] hover:text-[#111]'
             }`}
           >
             🇬🇧 EN
           </button>
           <button
             onClick={() => { sound.playTap(); setLanguage('ua'); }}
-            className={`px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1 transition-colors ${
-              language === 'ua' ? 'bg-mcd-yellow text-black' : 'text-[#A0A0A0] hover:text-white'
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
+              language === 'ua' ? 'bg-mcd-yellow text-black shadow-sm' : 'text-[#6B7280] hover:text-[#111]'
             }`}
           >
             🇺🇦 UA
           </button>
+        </div>
+
+        {/* Clock */}
+        <div className="hidden sm:flex items-center space-x-1.5 text-xs font-bold text-[#4B5563] bg-[#F3F4F6] px-3.5 py-2 rounded-full border border-[#D1D5DB]">
+          <Clock className="w-3.5 h-3.5 text-mcd-yellow" />
+          <span>{time}</span>
         </div>
       </div>
     </header>

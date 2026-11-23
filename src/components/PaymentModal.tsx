@@ -3,6 +3,7 @@ import { CreditCard, Smartphone, Banknote, X, CheckCircle, Wifi, ShieldCheck, Ar
 import { PaymentMethod, Language } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
+import { OfficialLogo } from './OfficialLogo';
 
 interface PaymentModalProps {
   totalAmount: number;
@@ -24,7 +25,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [terminalStage, setTerminalStage] = useState<'waiting_card' | 'reading' | 'authorizing' | 'success'>('waiting_card');
   const [cardTapped, setCardTapped] = useState(false);
 
-  // Auto trigger tap after 2.5s if user hasn't clicked
+  // Auto trigger card tap after 3.5s if user hasn't clicked
   useEffect(() => {
     if (step === 'terminal_processing' && !cardTapped) {
       const autoTapTimer = setTimeout(() => {
@@ -38,7 +39,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     sound.playTap();
     setSelectedMethod(method);
     if (method === 'cashier') {
-      // Cashier payment approves right away
       setStep('approved');
       setTimeout(() => {
         onPaymentSuccess('cashier');
@@ -55,16 +55,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     sound.playCardBeep();
     setTerminalStage('reading');
 
-    // Stage 1: reading card
     setTimeout(() => {
       setTerminalStage('authorizing');
 
-      // Stage 2: transaction authorized
       setTimeout(() => {
         setTerminalStage('success');
         sound.playSuccess();
 
-        // Stage 3: finalize order
         setTimeout(() => {
           onPaymentSuccess(selectedMethod);
         }, 1500);
@@ -73,20 +70,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-md select-none animate-fadeIn">
-      <div className="w-full max-w-3xl bg-[#1A1A1A] border-2 border-[#333333] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md select-none animate-fadeIn">
+      <div className="w-full max-w-3xl bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#1F1F1F]">
         {/* Top Header */}
-        <div className="p-6 bg-[#222222] border-b border-[#303030] flex items-center justify-between">
-          <div>
-            <h2 className="text-xl lg:text-2xl font-black text-white">
-              {step === 'choose_method' ? t.paymentTitle : 'Terminal Płatniczy'}
-            </h2>
-            <span className="text-xs text-[#A0A0A0]">
-              Do zapłaty:{' '}
-              <strong className="text-mcd-yellow text-sm font-black">
-                {totalAmount.toFixed(2).replace('.', ',')} zł
-              </strong>
-            </span>
+        <div className="p-6 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <OfficialLogo className="w-8 h-8" />
+            <div>
+              <h2 className="text-xl font-black text-[#111]">
+                {step === 'choose_method' ? t.paymentTitle : 'Terminal Płatniczy Kiosku'}
+              </h2>
+              <span className="text-xs text-[#6B7280]">
+                Do zapłaty:{' '}
+                <strong className="text-[#111] text-sm font-black">
+                  {totalAmount.toFixed(2).replace('.', ',')} zł
+                </strong>
+              </span>
+            </div>
           </div>
 
           {step === 'choose_method' && (
@@ -95,7 +95,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 sound.playTap();
                 onCancel();
               }}
-              className="w-10 h-10 rounded-full bg-[#2E2E2E] hover:bg-mcd-red text-white flex items-center justify-center transition-colors"
+              className="w-10 h-10 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white text-[#4B5563] flex items-center justify-center transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -105,20 +105,20 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* STEP 1: CHOOSE PAYMENT METHOD */}
         {step === 'choose_method' && (
           <div className="p-8 space-y-4">
-            {/* Card Payment (Default & Recommended) */}
+            {/* Card Payment (Default) */}
             <button
               onClick={() => handleSelectMethod('card')}
-              className="group w-full p-5 rounded-2xl bg-[#222222] hover:bg-[#2A2A2A] border-2 border-mcd-yellow hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-glow-yellow"
+              className="group w-full p-5 rounded-2xl bg-white hover:bg-[#FFFBEB] border-2 border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
             >
               <div className="flex items-center space-x-4">
                 <div className="w-14 h-14 rounded-xl bg-mcd-yellow text-black flex items-center justify-center font-bold">
                   <CreditCard className="w-8 h-8" />
                 </div>
                 <div className="text-left">
-                  <span className="text-lg font-black text-white block group-hover:text-mcd-yellow transition-colors">
+                  <span className="text-lg font-black text-[#111] block group-hover:text-mcd-red transition-colors">
                     {t.payCard}
                   </span>
-                  <span className="text-xs text-[#A0A0A0]">
+                  <span className="text-xs text-[#6B7280]">
                     Karta płatnicza, Apple Pay, Google Pay, zbliżeniowo lub chip
                   </span>
                 </div>
@@ -129,74 +129,75 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {/* BLIK Payment */}
             <button
               onClick={() => handleSelectMethod('blik')}
-              className="group w-full p-5 rounded-2xl bg-[#222222] hover:bg-[#2A2A2A] border-2 border-[#383838] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98"
+              className="group w-full p-5 rounded-2xl bg-white hover:bg-[#F9FAFB] border-2 border-[#E5E7EB] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
             >
               <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-xl bg-[#2E2E2E] text-white group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-black text-lg transition-colors">
+                <div className="w-14 h-14 rounded-xl bg-[#F3F4F6] text-[#111] group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-black text-lg transition-colors">
                   <Smartphone className="w-7 h-7" />
                 </div>
                 <div className="text-left">
-                  <span className="text-lg font-black text-white block group-hover:text-mcd-yellow transition-colors">
+                  <span className="text-lg font-black text-[#111] block group-hover:text-mcd-red transition-colors">
                     {t.payBlik}
                   </span>
-                  <span className="text-xs text-[#A0A0A0]">6-cyfrowy kod z aplikacji Twojego banku</span>
+                  <span className="text-xs text-[#6B7280]">6-cyfrowy kod z aplikacji Twojego banku</span>
                 </div>
               </div>
-              <ArrowRight className="w-6 h-6 text-[#777] group-hover:text-mcd-yellow" />
+              <ArrowRight className="w-6 h-6 text-[#9CA3AF] group-hover:text-mcd-yellow" />
             </button>
 
-            {/* Cash / Counter Payment */}
+            {/* Cashier Payment */}
             <button
               onClick={() => handleSelectMethod('cashier')}
-              className="group w-full p-5 rounded-2xl bg-[#222222] hover:bg-[#2A2A2A] border-2 border-[#383838] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98"
+              className="group w-full p-5 rounded-2xl bg-white hover:bg-[#F9FAFB] border-2 border-[#E5E7EB] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
             >
               <div className="flex items-center space-x-4">
-                <div className="w-14 h-14 rounded-xl bg-[#2E2E2E] text-white group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-bold transition-colors">
+                <div className="w-14 h-14 rounded-xl bg-[#F3F4F6] text-[#111] group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-bold transition-colors">
                   <Banknote className="w-7 h-7" />
                 </div>
                 <div className="text-left">
-                  <span className="text-lg font-black text-white block group-hover:text-mcd-yellow transition-colors">
+                  <span className="text-lg font-black text-[#111] block group-hover:text-mcd-red transition-colors">
                     {t.payCash}
                   </span>
-                  <span className="text-xs text-[#A0A0A0]">Zapłać gotówką lub bonem przy stanowisku kasowym</span>
+                  <span className="text-xs text-[#6B7280]">Zapłać gotówką lub bonem przy stanowisku kasowym</span>
                 </div>
               </div>
-              <ArrowRight className="w-6 h-6 text-[#777] group-hover:text-mcd-yellow" />
+              <ArrowRight className="w-6 h-6 text-[#9CA3AF] group-hover:text-mcd-yellow" />
             </button>
           </div>
         )}
 
-        {/* STEP 2: POS TERMINAL SIMULATION */}
+        {/* STEP 2: POS TERMINAL SIMULATION (Matches the Verifone terminal on photo) */}
         {step === 'terminal_processing' && (
-          <div className="p-8 flex flex-col items-center justify-center text-center space-y-6">
+          <div className="p-8 flex flex-col items-center justify-center text-center space-y-6 bg-[#FAFAFA]">
             {/* Terminal Main Instruction Header */}
-            <div className="bg-[#242424] border border-[#3E3E3E] px-6 py-3 rounded-2xl max-w-lg shadow-inner">
-              <span className="text-xs font-black uppercase tracking-wider text-mcd-yellow block animate-pulse">
+            <div className="bg-white border-2 border-mcd-yellow px-6 py-3 rounded-2xl max-w-lg shadow-sm">
+              <span className="text-xs font-black uppercase tracking-wider text-mcd-red block animate-pulse">
                 Instrukcja terminala
               </span>
-              <p className="text-base font-extrabold text-white mt-0.5">
+              <p className="text-base font-extrabold text-[#111] mt-0.5">
                 {t.terminalInstruction}
               </p>
             </div>
 
-            {/* Simulated POS Terminal Physical Device */}
-            <div className="w-80 bg-[#111111] border-4 border-[#2D2D2D] rounded-3xl p-5 shadow-2xl flex flex-col items-center relative">
+            {/* Simulated Verifone Terminal Physical Device (as seen in photo) */}
+            <div className="w-80 bg-[#1E1E1E] border-4 border-[#333333] rounded-3xl p-5 shadow-2xl flex flex-col items-center relative text-white">
               {/* Terminal Screen Glass */}
-              <div className="w-full bg-[#18261E] border-2 border-[#2F4436] rounded-xl p-4 text-[#89F5A2] font-mono text-left mb-4 shadow-inner">
-                <div className="flex items-center justify-between border-b border-[#2F4436] pb-1.5 mb-2 text-[10px]">
-                  <span>McDonald's #04</span>
+              <div className="w-full bg-[#0D1410] border-2 border-[#1E2D24] rounded-xl p-4 text-[#89F5A2] font-mono text-left mb-3 shadow-inner">
+                <div className="flex items-center justify-between border-b border-[#1E2D24] pb-1.5 mb-2 text-[10px]">
+                  <OfficialLogo className="w-5 h-5 text-mcd-yellow" />
+                  <span className="text-[#6DB881]">Verifone • Kiosk #04</span>
                   <Wifi className="w-3.5 h-3.5" />
                 </div>
 
-                <div className="text-center my-3">
-                  <span className="text-xs block text-[#6DB881]">KWOTA DO ZAPŁATY:</span>
+                <div className="text-center my-2">
+                  <span className="text-[10px] block text-[#6DB881]">KWOTA DO ZAPŁATY:</span>
                   <span className="text-2xl font-bold text-white tracking-wider">
                     {totalAmount.toFixed(2).replace('.', ',')} PLN
                   </span>
                 </div>
 
                 {/* Status on Terminal Screen */}
-                <div className="text-center py-2 bg-black/40 rounded-lg text-xs font-bold">
+                <div className="text-center py-2 bg-black/60 rounded-lg text-xs font-bold">
                   {terminalStage === 'waiting_card' && (
                     <span className="text-yellow-300 animate-pulse">ZBILIŻ LUB WŁÓŻ KARTĘ</span>
                   )}
@@ -213,7 +214,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
 
               {/* 4 LED Indicators */}
-              <div className="flex items-center space-x-3 mb-4">
+              <div className="flex items-center space-x-3 mb-3">
                 <div
                   className={`w-3.5 h-3.5 rounded-full border transition-all ${
                     terminalStage !== 'waiting_card'
@@ -244,15 +245,28 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 />
               </div>
 
-              {/* Contactless / NFC Wave Zone */}
-              <div className="w-full h-24 bg-[#1F1F1F] rounded-2xl border-2 border-dashed border-[#3A3A3A] flex flex-col items-center justify-center p-2 relative overflow-hidden">
-                <Wifi className="w-8 h-8 text-mcd-yellow rotate-90 mb-1" />
-                <span className="text-[11px] font-bold text-[#A0A0A0]">Strefa płatności zbliżeniowej</span>
+              {/* Physical Keypad (Matches the Verifone keypad in photo) */}
+              <div className="w-full bg-[#141414] rounded-xl p-2.5 grid grid-cols-3 gap-1.5 text-center text-xs font-bold text-gray-300 mb-3 border border-[#282828]">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', '✖', '0', '✓'].map((key) => (
+                  <div
+                    key={key}
+                    className={`py-1.5 rounded bg-[#242424] border border-[#333] shadow-inner ${
+                      key === '✓' ? 'text-emerald-400 font-black' : key === '✖' ? 'text-red-400 font-black' : ''
+                    }`}
+                  >
+                    {key}
+                  </div>
+                ))}
+              </div>
 
-                {/* Animated credit card sliding in */}
+              {/* Contactless / NFC Wave Zone */}
+              <div className="w-full h-16 bg-[#252525] rounded-xl border-2 border-dashed border-[#444] flex items-center justify-center space-x-2 relative overflow-hidden">
+                <Wifi className="w-5 h-5 text-mcd-yellow rotate-90" />
+                <span className="text-[11px] font-bold text-gray-300">Zbliż kartę lub telefon</span>
+
                 {cardTapped && (
-                  <div className="absolute inset-x-4 top-2 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl p-2.5 shadow-2xl flex items-center justify-between text-black animate-terminal">
-                    <CreditCard className="w-6 h-6" />
+                  <div className="absolute inset-x-2 inset-y-1 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-lg p-2 shadow-2xl flex items-center justify-between text-black animate-terminal">
+                    <CreditCard className="w-5 h-5" />
                     <span className="font-mono text-xs font-black">•••• 8824</span>
                     <ShieldCheck className="w-5 h-5" />
                   </div>
@@ -260,7 +274,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
 
-            {/* Interactive Tap Simulator Button */}
+            {/* Tap simulator button */}
             {terminalStage === 'waiting_card' && (
               <button
                 onClick={handleTapCard}
@@ -272,7 +286,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             )}
 
             {terminalStage !== 'waiting_card' && (
-              <div className="flex items-center gap-2 text-sm text-[#A0A0A0] font-semibold">
+              <div className="flex items-center gap-2 text-sm text-[#4B5563] font-semibold">
                 <div className="w-4 h-4 border-2 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
                 <span>{t.authorizing}</span>
               </div>
@@ -283,11 +297,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* STEP 3: APPROVED SCREEN */}
         {step === 'approved' && (
           <div className="p-12 flex flex-col items-center justify-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border-2 border-emerald-500 animate-bounce">
+            <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center border-2 border-emerald-500 animate-bounce">
               <CheckCircle className="w-12 h-12" />
             </div>
-            <h3 className="text-2xl font-black text-white">{t.paymentApproved}</h3>
-            <p className="text-sm text-[#A0A0A0]">Dziękujemy! Przygotowujemy Twój paragon i numer zamówienia...</p>
+            <h3 className="text-2xl font-black text-[#111]">{t.paymentApproved}</h3>
+            <p className="text-sm text-[#6B7280]">Dziękujemy! Przygotowujemy Twój paragon i numer zamówienia...</p>
           </div>
         )}
       </div>

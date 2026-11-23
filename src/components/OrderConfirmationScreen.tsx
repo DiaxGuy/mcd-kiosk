@@ -4,6 +4,7 @@ import { CheckCircle2, Printer, ArrowRight, Utensils, ShoppingBag, QrCode } from
 import { Order, Language } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
+import { OfficialLogo } from './OfficialLogo';
 
 interface OrderConfirmationScreenProps {
   order: Order;
@@ -19,7 +20,6 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
   const t = translations[language];
   const [countdown, setCountdown] = useState(15);
 
-  // Trigger confetti burst on load
   useEffect(() => {
     sound.playSuccess();
     try {
@@ -27,7 +27,7 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
         particleCount: 100,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#FFBC0D', '#DB0007', '#FFFFFF', '#008837']
+        colors: ['#FFBC0D', '#DB0007', '#008837', '#1F1F1F']
       });
     } catch {}
 
@@ -46,26 +46,22 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
   }, []);
 
   return (
-    <div className="relative w-screen h-screen bg-[#111111] text-white flex flex-col justify-between p-8 select-none overflow-hidden animate-fadeIn">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-mcd-yellow/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="relative w-screen h-screen bg-[#F4F4F6] text-[#1F1F1F] flex flex-col justify-between p-8 select-none overflow-hidden animate-fadeIn">
+      {/* Ambient background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-mcd-yellow/15 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header */}
       <div className="w-full max-w-6xl mx-auto flex items-center justify-between z-10">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-mcd-red rounded-xl flex items-center justify-center p-1.5 shadow-lg">
-            <svg viewBox="0 0 109 100" className="w-full h-full fill-mcd-yellow">
-              <path d="M54.3 98.7C42 36.6 24.3 6.6 20.3 0c-4 6.6-21.7 36.6-34 98.7h18.3c8.1-42.5 15.7-72.3 15.7-72.3s7.6 29.8 15.7 72.3h18.3zm34.4 0c-12.3-62.1-30-92.1-34-98.7-4 6.6-21.7 36.6-34 98.7h18.3c8.1-42.5 15.7-72.3 15.7-72.3s7.6 29.8 15.7 72.3h18.3z" transform="translate(14, 0) scale(0.9)"/>
-            </svg>
-          </div>
+          <OfficialLogo className="w-12 h-11" />
           <div>
-            <h1 className="text-2xl font-black text-white">McDonald's</h1>
-            <span className="text-xs text-[#8E8E8E]">{order.kioskId} • {t.paymentApproved}</span>
+            <h1 className="text-2xl font-black text-[#111]">McDonald's</h1>
+            <span className="text-xs text-[#6B7280]">{order.kioskId} • {t.paymentApproved}</span>
           </div>
         </div>
 
         {/* Dining mode badge */}
-        <div className="px-5 py-2 rounded-full bg-[#202020] border border-[#3A3A3A] flex items-center gap-2 text-sm font-black text-mcd-yellow">
+        <div className="px-5 py-2 rounded-full bg-white border border-[#E5E7EB] shadow-sm flex items-center gap-2 text-sm font-black text-[#111]">
           {order.orderType === 'dine_in' ? (
             <>
               <Utensils className="w-4 h-4 text-mcd-yellow" />
@@ -84,38 +80,38 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
       <div className="flex-1 w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10 my-4 z-10 overflow-hidden">
         {/* Left Side: Massive Order Number & Instructions */}
         <div className="flex-1 flex flex-col justify-center space-y-6">
-          <div className="space-y-2">
-            <span className="text-xs font-black uppercase tracking-widest text-mcd-yellow block">
+          <div className="space-y-1">
+            <span className="text-xs font-black uppercase tracking-widest text-mcd-red block">
               {t.thankYou}
             </span>
-            <h2 className="text-xl lg:text-2xl font-bold text-[#D0D0D0]">
+            <h2 className="text-xl lg:text-2xl font-bold text-[#4B5563]">
               {t.yourOrderNumber}
             </h2>
           </div>
 
-          {/* Huge Order Number Box */}
-          <div className="w-full max-w-md bg-gradient-to-br from-[#1E1E1E] to-[#262626] border-4 border-mcd-yellow rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden">
-            <div className="text-7xl lg:text-9xl font-black text-mcd-yellow tracking-tighter leading-none py-2 drop-shadow-[0_4px_20px_rgba(255,188,13,0.3)]">
+          {/* Huge Order Number Card */}
+          <div className="w-full max-w-md bg-white border-4 border-mcd-yellow rounded-3xl p-8 text-center shadow-xl relative overflow-hidden">
+            <div className="text-7xl lg:text-9xl font-black text-[#111] tracking-tighter leading-none py-2 drop-shadow-sm">
               #{order.orderNumber}
             </div>
-            <div className="mt-4 pt-4 border-t border-[#333] flex items-center justify-center gap-2 text-xs font-bold text-white uppercase tracking-wider">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div className="mt-4 pt-4 border-t border-[#F3F4F6] flex items-center justify-center gap-2 text-xs font-bold text-[#374151] uppercase tracking-wider">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>Status: Przygotowywane w kuchni</span>
             </div>
           </div>
 
-          {/* Instructions Box */}
+          {/* Instructions */}
           <div className="space-y-3 max-w-md">
-            <div className="flex items-start space-x-3 bg-[#1C1C1C] border border-[#2F2F2F] p-4 rounded-2xl">
+            <div className="flex items-start space-x-3 bg-white border border-[#E5E7EB] p-4 rounded-2xl shadow-sm">
               <Printer className="w-6 h-6 text-mcd-yellow shrink-0 mt-0.5" />
-              <p className="text-sm text-[#CCCCCC] leading-snug">
+              <p className="text-sm text-[#4B5563] leading-snug">
                 {t.takeReceipt}
               </p>
             </div>
-            <div className="flex items-start space-x-3 bg-[#1C1C1C] border border-[#2F2F2F] p-4 rounded-2xl">
-              <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-              <p className="text-sm text-[#CCCCCC] leading-snug">
-                {t.watchScreen} Twój numer pojawi się w sekcji "W realizacji" / "Do odbioru".
+            <div className="flex items-start space-x-3 bg-white border border-[#E5E7EB] p-4 rounded-2xl shadow-sm">
+              <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-[#4B5563] leading-snug">
+                {t.watchScreen} Twój numer pojawi się na ekranie nad ladą.
               </p>
             </div>
           </div>
@@ -124,12 +120,12 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
         {/* Right Side: Virtual Thermal Receipt sliding down */}
         <div className="w-80 lg:w-96 flex flex-col items-center">
           {/* Printer Slot Graphic */}
-          <div className="w-full h-4 bg-[#0A0A0A] border-2 border-[#333] rounded-t-lg shadow-inner z-20 flex items-center justify-center">
+          <div className="w-full h-4 bg-[#262626] border-2 border-[#111] rounded-t-lg shadow-inner z-20 flex items-center justify-center">
             <div className="w-48 h-1 bg-black rounded-full" />
           </div>
 
           {/* Paper Receipt */}
-          <div className="w-full bg-[#FAFAFA] text-[#111111] p-6 font-mono text-xs shadow-2xl rounded-b-lg border-x-2 border-b-2 border-[#DDD] receipt-slide-in max-h-[500px] overflow-y-auto scrollbar-thin">
+          <div className="w-full bg-[#FFFFFF] text-[#111111] p-6 font-mono text-xs shadow-2xl rounded-b-lg border-x-2 border-b-2 border-[#D1D5DB] receipt-slide-in max-h-[500px] overflow-y-auto scrollbar-thin">
             {/* Receipt Header */}
             <div className="text-center border-b-2 border-dashed border-[#888] pb-3 mb-3">
               <h3 className="font-black text-sm uppercase tracking-wider text-black">McDonald's Polska</h3>
@@ -195,7 +191,9 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
               </div>
               <div className="flex justify-between text-[10px] text-[#555]">
                 <span>Płatność:</span>
-                <span className="font-bold uppercase">{order.paymentMethod === 'card' ? 'KARTA (ZATWIERDZONA)' : order.paymentMethod}</span>
+                <span className="font-bold uppercase">
+                  {order.paymentMethod === 'card' ? 'KARTA (ZATWIERDZONA)' : order.paymentMethod}
+                </span>
               </div>
               <div className="text-[9px] text-[#777] pt-1">
                 Nr transakcji: {order.receiptNumber}
@@ -217,10 +215,10 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
       </div>
 
       {/* Bottom Bar: Auto-return timer & Finish Button */}
-      <div className="w-full max-w-6xl mx-auto flex items-center justify-between border-t border-[#222222] pt-4 z-10 text-xs text-[#8E8E8E]">
+      <div className="w-full max-w-6xl mx-auto flex items-center justify-between border-t border-[#E5E7EB] pt-4 z-10 text-xs text-[#6B7280]">
         <div className="flex items-center gap-2">
           <span>{t.autoReturn}:</span>
-          <span className="font-black text-mcd-yellow text-sm">{countdown} s</span>
+          <span className="font-black text-[#111] text-sm">{countdown} s</span>
         </div>
 
         <button
@@ -228,7 +226,7 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
             sound.playTap();
             onFinish();
           }}
-          className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#e5a80b] text-black font-black text-sm flex items-center gap-2 shadow-glow-yellow transition-all transform active:scale-95"
+          className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-sm flex items-center gap-2 shadow-sm transition-all transform active:scale-95"
         >
           <span>{t.finishNow}</span>
           <ArrowRight className="w-4 h-4" />

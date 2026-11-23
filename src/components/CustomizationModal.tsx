@@ -38,7 +38,6 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
 }) => {
   const t = translations[language];
 
-  // State
   const [selectedMealSize, setSelectedMealSize] = useState<'single' | 'medium' | 'large'>(
     item.isCustomizable ? 'medium' : 'single'
   );
@@ -50,7 +49,6 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
     item.isCustomizable ? 'meal' : item.isBoxOrNuggets ? 'sauces' : 'ingredients'
   );
 
-  // Compute prices
   const mealSizeOption = mealSizes.find((m) => m.id === selectedMealSize);
   const mealDelta = selectedMealSize !== 'single' && mealSizeOption ? mealSizeOption.priceDelta : 0;
   const sideExtra = selectedMealSize !== 'single' ? selectedSide.extraPrice : 0;
@@ -105,15 +103,15 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none animate-fadeIn">
-      <div className="w-full max-w-5xl h-[85vh] bg-[#1A1A1A] border-2 border-[#333333] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none animate-fadeIn">
+      <div className="w-full max-w-5xl h-[85vh] bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#1F1F1F]">
         {/* Modal Top Header */}
-        <div className="h-20 px-8 bg-[#202020] border-b border-[#303030] flex items-center justify-between shrink-0">
+        <div className="h-20 px-8 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-5">
             <img src={item.image} alt={item.name} className="w-16 h-16 object-contain" />
             <div>
-              <h2 className="text-xl lg:text-2xl font-black text-white">{item.name}</h2>
-              <span className="text-sm text-mcd-yellow font-bold">
+              <h2 className="text-xl lg:text-2xl font-black text-[#111]">{item.name}</h2>
+              <span className="text-xs text-[#6B7280] font-bold">
                 Cena bazowa: {item.price.toFixed(2)} zł
               </span>
             </div>
@@ -124,21 +122,21 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               sound.playTap();
               onClose();
             }}
-            className="w-11 h-11 rounded-full bg-[#2E2E2E] hover:bg-mcd-red text-white flex items-center justify-center transition-colors shadow-md"
+            className="w-10 h-10 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white text-[#4B5563] flex items-center justify-center transition-colors shadow-sm"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Horizontal Navigation Tabs */}
-        <div className="px-8 py-3 bg-[#181818] border-b border-[#2A2A2A] flex items-center space-x-3 shrink-0 overflow-x-auto scrollbar-none">
+        <div className="px-8 py-3 bg-[#F3F4F6] border-b border-[#E5E7EB] flex items-center space-x-3 shrink-0 overflow-x-auto scrollbar-none">
           {item.isCustomizable && (
             <button
               onClick={() => { sound.playTap(); setActiveTab('meal'); }}
               className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
                 activeTab === 'meal'
-                  ? 'bg-mcd-yellow text-black shadow-lg scale-102'
-                  : 'bg-[#242424] text-[#A0A0A0] hover:text-white'
+                  ? 'bg-mcd-yellow text-black shadow-sm font-black'
+                  : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
               }`}
             >
               <span>Rozmiar zestawu</span>
@@ -151,8 +149,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               onClick={() => { sound.playTap(); setActiveTab('ingredients'); }}
               className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
                 activeTab === 'ingredients'
-                  ? 'bg-mcd-yellow text-black shadow-lg scale-102'
-                  : 'bg-[#242424] text-[#A0A0A0] hover:text-white'
+                  ? 'bg-mcd-yellow text-black shadow-sm font-black'
+                  : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
               }`}
             >
               <span>Modyfikacja składników</span>
@@ -170,8 +168,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 onClick={() => { sound.playTap(); setActiveTab('side'); }}
                 className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
                   activeTab === 'side'
-                    ? 'bg-mcd-yellow text-black shadow-lg scale-102'
-                    : 'bg-[#242424] text-[#A0A0A0] hover:text-white'
+                    ? 'bg-mcd-yellow text-black shadow-sm font-black'
+                    : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
                 }`}
               >
                 <span>Wybór dodatku</span>
@@ -182,8 +180,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 onClick={() => { sound.playTap(); setActiveTab('drink'); }}
                 className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
                   activeTab === 'drink'
-                    ? 'bg-mcd-yellow text-black shadow-lg scale-102'
-                    : 'bg-[#242424] text-[#A0A0A0] hover:text-white'
+                    ? 'bg-mcd-yellow text-black shadow-sm font-black'
+                    : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
                 }`}
               >
                 <span>Wybór napoju</span>
@@ -197,8 +195,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               onClick={() => { sound.playTap(); setActiveTab('sauces'); }}
               className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
                 activeTab === 'sauces'
-                  ? 'bg-mcd-yellow text-black shadow-lg scale-102'
-                  : 'bg-[#242424] text-[#A0A0A0] hover:text-white'
+                  ? 'bg-mcd-yellow text-black shadow-sm font-black'
+                  : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
               }`}
             >
               <span>Wybór sosów do kurczaka</span>
@@ -207,11 +205,11 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
         </div>
 
         {/* Tab Body Content */}
-        <div className="flex-1 overflow-y-auto p-8 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto p-8 scrollbar-thin bg-[#FAFAFA]">
           {/* TAB 1: MEAL SIZE */}
           {activeTab === 'meal' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-white mb-2">{t.chooseVariant}</h3>
+              <h3 className="text-lg font-black text-[#111] mb-2">{t.chooseVariant}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {mealSizes.map((size) => {
                   const isSelected = selectedMealSize === size.id;
@@ -224,10 +222,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         sound.playTap();
                         setSelectedMealSize(size.id);
                       }}
-                      className={`relative bg-[#222222] border-2 rounded-3xl p-6 cursor-pointer transition-all flex flex-col justify-between ${
+                      className={`relative bg-white border-2 rounded-3xl p-6 cursor-pointer transition-all flex flex-col justify-between shadow-sm ${
                         isSelected
-                          ? 'border-mcd-yellow bg-[#282828] shadow-glow-yellow'
-                          : 'border-[#383838] hover:border-[#555]'
+                          ? 'border-mcd-yellow bg-[#FFFBEB] shadow-md'
+                          : 'border-[#E5E7EB] hover:border-[#CBD5E1]'
                       }`}
                     >
                       {isSelected && (
@@ -237,13 +235,13 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                       )}
 
                       <div className="space-y-2">
-                        <span className="text-xl font-black text-white block">{size.name}</span>
-                        <p className="text-xs text-[#A0A0A0] leading-relaxed">{size.desc}</p>
+                        <span className="text-xl font-black text-[#111] block">{size.name}</span>
+                        <p className="text-xs text-[#6B7280] leading-relaxed">{size.desc}</p>
                       </div>
 
-                      <div className="mt-8 pt-4 border-t border-[#333] flex items-baseline justify-between">
-                        <span className="text-xs text-[#888] font-bold">Cena razem:</span>
-                        <span className="text-xl font-black text-white">
+                      <div className="mt-8 pt-4 border-t border-[#E5E7EB] flex items-baseline justify-between">
+                        <span className="text-xs text-[#6B7280] font-bold">Cena razem:</span>
+                        <span className="text-xl font-black text-[#111]">
                           {price.toFixed(2).replace('.', ',')} zł
                         </span>
                       </div>
@@ -254,19 +252,19 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
             </div>
           )}
 
-          {/* TAB 2: CUSTOMIZE INGREDIENTS */}
+          {/* TAB 2: INGREDIENTS */}
           {activeTab === 'ingredients' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-black text-white">{t.customizeIngredients}</h3>
-                <p className="text-xs text-[#A0A0A0] mt-0.5">
+                <h3 className="text-lg font-black text-[#111]">{t.customizeIngredients}</h3>
+                <p className="text-xs text-[#6B7280] mt-0.5">
                   Dodaj ulubione składniki lub usuń te, za którymi nie przepadasz!
                 </p>
               </div>
 
-              {/* Add extras section */}
+              {/* Add extras */}
               <div>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400 block mb-3">
+                <span className="text-xs font-black uppercase tracking-wider text-emerald-700 block mb-3">
                   ✚ Dodatkowe składniki (Ekstra)
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -280,19 +278,19 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                           onClick={() => toggleIngredient(ing)}
                           className={`p-4 rounded-2xl border-2 text-left flex items-center justify-between transition-all ${
                             isSelected
-                              ? 'border-emerald-500 bg-emerald-950/30 text-white'
-                              : 'border-[#333] bg-[#222] text-[#CCC] hover:border-[#555]'
+                              ? 'border-emerald-500 bg-emerald-50 text-[#111]'
+                              : 'border-[#E5E7EB] bg-white text-[#374151] hover:border-[#CBD5E1]'
                           }`}
                         >
                           <div>
                             <span className="font-bold text-sm block">{ing.name}</span>
-                            <span className="text-xs font-black text-mcd-yellow">
+                            <span className="text-xs font-black text-[#111]">
                               +{ing.price.toFixed(2)} zł
                             </span>
                           </div>
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                              isSelected ? 'bg-emerald-500 text-black' : 'bg-[#333] text-white'
+                              isSelected ? 'bg-emerald-500 text-white' : 'bg-[#F3F4F6] text-[#6B7280]'
                             }`}
                           >
                             {isSelected ? '✓' : '+'}
@@ -303,9 +301,9 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 </div>
               </div>
 
-              {/* Remove components section */}
+              {/* Remove components */}
               <div>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-red-400 block mb-3">
+                <span className="text-xs font-black uppercase tracking-wider text-red-600 block mb-3">
                   ✖ Usuń składnik
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -319,17 +317,17 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                           onClick={() => toggleIngredient(ing)}
                           className={`p-4 rounded-2xl border-2 text-left flex items-center justify-between transition-all ${
                             isSelected
-                              ? 'border-red-500 bg-red-950/30 text-white'
-                              : 'border-[#333] bg-[#222] text-[#CCC] hover:border-[#555]'
+                              ? 'border-red-500 bg-red-50 text-[#111]'
+                              : 'border-[#E5E7EB] bg-white text-[#374151] hover:border-[#CBD5E1]'
                           }`}
                         >
                           <div>
                             <span className="font-bold text-sm block">{ing.name}</span>
-                            <span className="text-xs text-[#888]">Standardowo w kanapce</span>
+                            <span className="text-xs text-[#6B7280]">Standardowo w kanapce</span>
                           </div>
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                              isSelected ? 'bg-red-500 text-white' : 'bg-[#333] text-[#888]'
+                              isSelected ? 'bg-red-500 text-white' : 'bg-[#F3F4F6] text-[#9CA3AF]'
                             }`}
                           >
                             {isSelected ? '✖' : '−'}
@@ -342,10 +340,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
             </div>
           )}
 
-          {/* TAB 3: SIDE CHOICE */}
+          {/* TAB 3: SIDE */}
           {activeTab === 'side' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-white">{t.chooseSide}</h3>
+              <h3 className="text-lg font-black text-[#111]">{t.chooseSide}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {availableSides.map((side) => {
                   const isSelected = selectedSide.id === side.id;
@@ -358,19 +356,19 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                       }}
                       className={`p-4 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                         isSelected
-                          ? 'border-mcd-yellow bg-[#282828] shadow-glow-yellow'
-                          : 'border-[#333] bg-[#222] hover:border-[#555]'
+                          ? 'border-mcd-yellow bg-[#FFFBEB] shadow-sm'
+                          : 'border-[#E5E7EB] bg-white hover:border-[#CBD5E1]'
                       }`}
                     >
                       <div>
-                        <span className="font-bold text-sm text-white block">{side.name}</span>
-                        <span className="text-xs font-bold text-mcd-yellow">
+                        <span className="font-bold text-sm text-[#111] block">{side.name}</span>
+                        <span className="text-xs font-bold text-[#6B7280]">
                           {side.extraPrice > 0 ? `+${side.extraPrice.toFixed(2)} zł` : 'W cenie zestawu'}
                         </span>
                       </div>
                       <div
                         className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                          isSelected ? 'bg-mcd-yellow text-black' : 'bg-[#333]'
+                          isSelected ? 'bg-mcd-yellow text-black' : 'bg-[#F3F4F6] text-[#9CA3AF]'
                         }`}
                       >
                         {isSelected && '✓'}
@@ -382,10 +380,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
             </div>
           )}
 
-          {/* TAB 4: DRINK CHOICE */}
+          {/* TAB 4: DRINK */}
           {activeTab === 'drink' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-white">{t.chooseDrink}</h3>
+              <h3 className="text-lg font-black text-[#111]">{t.chooseDrink}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {availableDrinks.map((drink) => {
                   const isSelected = selectedDrink.id === drink.id;
@@ -398,19 +396,19 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                       }}
                       className={`p-4 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${
                         isSelected
-                          ? 'border-mcd-yellow bg-[#282828] shadow-glow-yellow'
-                          : 'border-[#333] bg-[#222] hover:border-[#555]'
+                          ? 'border-mcd-yellow bg-[#FFFBEB] shadow-sm'
+                          : 'border-[#E5E7EB] bg-white hover:border-[#CBD5E1]'
                       }`}
                     >
                       <div>
-                        <span className="font-bold text-sm text-white block">{drink.name}</span>
-                        <span className="text-xs font-bold text-mcd-yellow">
+                        <span className="font-bold text-sm text-[#111] block">{drink.name}</span>
+                        <span className="text-xs font-bold text-[#6B7280]">
                           {drink.extraPrice > 0 ? `+${drink.extraPrice.toFixed(2)} zł` : 'W cenie zestawu'}
                         </span>
                       </div>
                       <div
                         className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                          isSelected ? 'bg-mcd-yellow text-black' : 'bg-[#333]'
+                          isSelected ? 'bg-mcd-yellow text-black' : 'bg-[#F3F4F6] text-[#9CA3AF]'
                         }`}
                       >
                         {isSelected && '✓'}
@@ -425,27 +423,27 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {/* TAB 5: SAUCES */}
           {activeTab === 'sauces' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-white">{t.chooseSauces}</h3>
+              <h3 className="text-lg font-black text-[#111]">{t.chooseSauces}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {availableSauces.map((sauce) => {
                   const count = selectedSauces[sauce.id] || 0;
                   return (
                     <div
                       key={sauce.id}
-                      className="p-4 rounded-2xl border border-[#333] bg-[#222] flex items-center justify-between"
+                      className="p-4 rounded-2xl border border-[#E5E7EB] bg-white flex items-center justify-between"
                     >
                       <div>
-                        <span className="font-bold text-sm text-white block">{sauce.name}</span>
-                        <span className="text-xs text-[#888]">{sauce.price.toFixed(2)} zł / szt.</span>
+                        <span className="font-bold text-sm text-[#111] block">{sauce.name}</span>
+                        <span className="text-xs text-[#6B7280]">{sauce.price.toFixed(2)} zł / szt.</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => updateSauceCount(sauce.id, -1)}
-                          className="w-7 h-7 rounded-lg bg-[#333] hover:bg-[#444] text-white flex items-center justify-center font-bold text-sm"
+                          className="w-7 h-7 rounded-lg bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111] flex items-center justify-center font-bold text-sm"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-5 text-center font-black text-sm text-white">{count}</span>
+                        <span className="w-5 text-center font-black text-sm text-[#111]">{count}</span>
                         <button
                           onClick={() => updateSauceCount(sauce.id, 1)}
                           className="w-7 h-7 rounded-lg bg-mcd-yellow text-black flex items-center justify-center font-bold text-sm"
@@ -462,10 +460,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
         </div>
 
         {/* Modal Bottom Action Bar */}
-        <div className="h-24 px-8 bg-[#202020] border-t border-[#303030] flex items-center justify-between shrink-0">
+        <div className="h-24 px-8 bg-white border-t border-[#E5E7EB] flex items-center justify-between shrink-0 shadow-sm">
           <div>
-            <span className="text-xs uppercase font-extrabold text-[#888] block">Łączna kwota</span>
-            <span className="text-2xl lg:text-3xl font-black text-mcd-yellow">
+            <span className="text-xs uppercase font-extrabold text-[#6B7280] block">Łączna kwota</span>
+            <span className="text-2xl lg:text-3xl font-black text-[#111]">
               {unitPrice.toFixed(2).replace('.', ',')} zł
             </span>
           </div>
@@ -476,14 +474,14 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 sound.playTap();
                 onClose();
               }}
-              className="px-6 py-3.5 rounded-2xl bg-[#2E2E2E] hover:bg-[#3E3E3E] text-white font-bold text-sm transition-colors"
+              className="px-6 py-3.5 rounded-2xl bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111] font-bold text-sm transition-colors"
             >
               {t.cancel}
             </button>
 
             <button
               onClick={handleConfirm}
-              className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#e5a80b] active:scale-98 text-black font-black text-base flex items-center gap-2 shadow-glow-yellow transition-all"
+              className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-base flex items-center gap-2 shadow-sm transition-all active:scale-98"
             >
               <span>{t.addToOrder}</span>
               <ChevronRight className="w-5 h-5" />
