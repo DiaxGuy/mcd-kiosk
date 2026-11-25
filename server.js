@@ -43,10 +43,37 @@ try {
   console.error('Error loading data:', err);
 }
 
-// In-memory orders with auto-cycling order number (01 - 99)
-let currentOrderNumber = 41;
-const orders = [];
+// Persisted orders & auto-cycling order number (01 - 99)
+const ordersFilePath = path.join(__dirname, 'data', 'orders.json');
+let currentOrderNumber = Math.floor(10 + Math.random() * 80);
+let orders = [];
 const pendingSessions = new Map();
+
+try {
+  if (fs.existsSync(ordersFilePath)) {
+    const saved = JSON.parse(fs.readFileSync(ordersFilePath, 'utf-8'));
+    if (typeof saved.currentOrderNumber === 'number') {
+      currentOrderNumber = saved.currentOrderNumber;
+    }
+    if (Array.isArray(saved.orders)) {
+      orders = saved.orders;
+    }
+  }
+} catch (err) {
+  console.warn('Could not load persisted orders:', err);
+}
+
+function saveOrdersToDisk() {
+  try {
+    fs.writeFileSync(
+      ordersFilePath,
+      JSON.stringify({ currentOrderNumber, orders: orders.slice(0, 200) }, null, 2),
+      'utf-8'
+    );
+  } catch (err) {
+    console.warn('Could not persist orders:', err);
+  }
+}
 
 function createOrderRecord({ items, orderType, tableNumber, appliedCoupon, paymentMethod, totalAmount, paymentIntentId }) {
   currentOrderNumber = (currentOrderNumber % 99) + 1;
@@ -71,6 +98,7 @@ function createOrderRecord({ items, orderType, tableNumber, appliedCoupon, payme
 
   orders.unshift(newOrder);
   if (orders.length > 200) orders.pop();
+  saveOrdersToDisk();
 
   console.log(`[ORDER CREATED] #${orderNumberStr} - ${newOrder.orderType}${newOrder.tableNumber ? ` (Stolik #${newOrder.tableNumber})` : ''} - ${newOrder.totalAmount} PLN via ${newOrder.paymentMethod}`);
   return newOrder;
@@ -300,6 +328,7 @@ app.patch('/api/orders/:orderNumber/status', (req, res) => {
   if (!order) return res.status(404).json({ error: 'Order not found' });
   if (['preparing', 'ready', 'completed'].includes(kitchenStatus)) {
     order.kitchenStatus = kitchenStatus;
+    saveOrdersToDisk();
   }
   res.json(order);
 });

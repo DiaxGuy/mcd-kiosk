@@ -78,6 +78,31 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
 
   const unitPrice = item.price + mealDelta + sideExtra + drinkExtra + ingredientsPrice + extraSaucePrice;
 
+  // Ordered step-by-step wizard tabs
+  const wizardSteps: Array<'meal' | 'side' | 'drink' | 'sauces' | 'ingredients'> = (() => {
+    if (item.isCustomizable && selectedMealSize !== 'single') {
+      return item.isBoxOrNuggets
+        ? ['meal', 'side', 'drink', 'sauces', 'ingredients']
+        : ['meal', 'side', 'drink', 'ingredients'];
+    }
+    if (item.isCustomizable) {
+      return item.isBoxOrNuggets ? ['meal', 'sauces', 'ingredients'] : ['meal', 'ingredients'];
+    }
+    return item.isBoxOrNuggets ? ['sauces', 'ingredients'] : ['ingredients'];
+  })();
+
+  const currentStepIdx = wizardSteps.indexOf(activeTab);
+  const hasNextStep = !editingCartItem && currentStepIdx >= 0 && currentStepIdx < wizardSteps.length - 1;
+
+  const handleNextStep = () => {
+    sound.playTap();
+    if (hasNextStep) {
+      setActiveTab(wizardSteps[currentStepIdx + 1]);
+    } else {
+      handleConfirm();
+    }
+  };
+
   const toggleIngredient = (ing: CustomIngredient) => {
     sound.playTap();
     const exists = selectedIngredients.find((i) => i.id === ing.id);
@@ -509,10 +534,16 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
             </button>
 
             <button
-              onClick={handleConfirm}
+              onClick={handleNextStep}
               className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-base flex items-center gap-2 shadow-sm transition-all active:scale-98"
             >
-              <span>{editingCartItem ? 'Zapisz zmiany' : t.addToOrder}</span>
+              <span>
+                {editingCartItem
+                  ? 'Zapisz zmiany'
+                  : hasNextStep
+                  ? `Dalej (Krok ${currentStepIdx + 2}/${wizardSteps.length})`
+                  : t.addToOrder}
+              </span>
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>

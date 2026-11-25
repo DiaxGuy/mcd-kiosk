@@ -169,19 +169,8 @@ export const AttractScreen: React.FC<AttractScreenProps> = ({
 
       {/* Bottom Bar: Touch prompt */}
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between border-t border-[#E5E7EB] pt-4 z-10 text-xs text-[#6B7280]">
-        <div className="flex items-center gap-4">
+        <div>
           <span>McDonald&apos;s Polska • Kiosk samoobsługowy najnowszej generacji</span>
-          {onOpenBoard && (
-            <button
-              onClick={() => {
-                sound.playTap();
-                onOpenBoard();
-              }}
-              className="px-3 py-1 rounded-full bg-white hover:bg-mcd-yellow border border-[#D1D5DB] text-[#111] font-bold text-[11px] transition-colors"
-            >
-              📺 Tablica odbioru (/ekran)
-            </button>
-          )}
         </div>
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
