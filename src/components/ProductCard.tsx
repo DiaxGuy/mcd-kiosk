@@ -27,21 +27,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <div
       onClick={handleClick}
-      className="group relative bg-white border border-[#E5E7EB] hover:border-[#FFBC0D] rounded-xl px-4 pt-3 pb-4 flex flex-col justify-between cursor-pointer transition-colors duration-150 active:scale-[0.97]"
+      className="group relative bg-white border border-[#E5E5E5] hover:border-[#FFBC0D] rounded-lg px-3.5 pt-2.5 pb-3.5 flex flex-col justify-between cursor-pointer transition-colors active:bg-[#FFFDF5]"
     >
-      {/* Top Badge Strip (Rectangular McDonald's style tag at top-left + subtle info icon top-right) */}
-      <div className="flex items-start justify-between w-full min-h-[20px]">
+      {/* Top strip: subtle small yellow tag (only when badge exists, clean flat look) + info icon */}
+      <div className="flex items-start justify-between w-full min-h-[18px]">
         {item.badge ? (
           <span
-            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-sm tracking-wide ${
-              item.badge.includes('ZIMOWY') || item.badge.includes('HIT')
-                ? 'bg-[#DB0007] text-white'
-                : item.badge.includes('WEGE')
+            className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-[3px] tracking-wide ${
+              item.badge.includes('WEGE')
                 ? 'bg-[#008837] text-white'
                 : 'bg-[#FFBC0D] text-[#111111]'
             }`}
           >
-            {item.badge}
+            {item.badge === 'ZIMOWY HIT' ? 'Sezonowe' : item.badge}
           </span>
         ) : (
           <span />
@@ -55,7 +53,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               sound.playTap();
               onShowNutrition(item);
             }}
-            className="w-6 h-6 rounded-full text-[#9CA3AF] hover:text-[#111111] hover:bg-[#F3F4F6] flex items-center justify-center transition-colors"
+            className="w-5 h-5 rounded-full text-[#B0B0B0] hover:text-[#292929] flex items-center justify-center transition-colors"
             title="Wartości odżywcze i alergeny"
           >
             <Info className="w-3.5 h-3.5" />
@@ -63,13 +61,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
 
-      {/* Product Packshot (Pure white background, large clean food image) */}
-      <div className="w-full h-32 lg:h-36 flex items-center justify-center my-2">
+      {/* Product Image */}
+      <div className="w-full h-28 lg:h-32 flex items-center justify-center my-1.5 overflow-hidden">
         <img
           src={item.image}
           alt={item.name}
           loading="lazy"
-          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-150"
+          className="max-h-full max-w-full object-contain group-hover:scale-[1.03] transition-transform duration-150"
           onError={(e) => {
             (e.target as HTMLImageElement).src =
               'https://cdn.mcdonalds.pl/uploads/20240702143550/354267-big-mac-na-www-1090x664px-big-mac-2.png';
@@ -77,18 +75,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         />
       </div>
 
-      {/* Official Clean Product Label: Name + Single-line Price & Kcal (no extra bottom button bar!) */}
-      <div className="mt-1 text-center space-y-1">
-        <h3 className="font-extrabold text-[14px] lg:text-[15px] text-[#111111] leading-tight line-clamp-2">
+      {/* Clean McDonald's Label */}
+      <div className="mt-1 text-center space-y-0.5">
+        <h3 className="font-bold text-[13px] lg:text-sm text-[#292929] leading-tight line-clamp-2">
           {item.name}
         </h3>
-        <p className="text-xs text-[#4B5563] font-bold">
-          <span className="text-[#111111] font-black text-sm">
+        <p className="text-xs text-[#6B7280] font-semibold">
+          <span className="text-[#111111] font-extrabold">
             {item.price.toFixed(2).replace('.', ',')} zł
           </span>
-          {item.kcal ? (
-            <span className="text-[#6B7280] font-semibold"> • {item.kcal} {t.kcal}</span>
-          ) : null}
+          {item.kcal ? <span> · {item.kcal} {t.kcal}</span> : null}
         </p>
       </div>
     </div>

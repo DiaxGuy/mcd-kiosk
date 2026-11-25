@@ -34,14 +34,14 @@ export const TableServiceModal: React.FC<TableServiceModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/75 backdrop-blur-sm select-none animate-fadeIn">
-      <div className="w-full max-w-2xl bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl overflow-hidden text-[#1F1F1F]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 select-none">
+      <div className="w-full max-w-2xl bg-white border border-[#D4D4D4] rounded-xl overflow-hidden text-[#292929]">
         {/* Header */}
-        <div className="p-6 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center justify-between">
+        <div className="p-5 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <OfficialLogo className="w-9 h-8" />
             <div>
-              <h2 className="text-xl font-black text-[#111]">
+              <h2 className="text-xl font-extrabold text-[#111]">
                 {mode === 'choose' ? 'Gdzie podać zamówienie?' : 'Wpisz numer lokalizatora'}
               </h2>
               <p className="text-xs text-[#6B7280] font-medium">
@@ -54,21 +54,21 @@ export const TableServiceModal: React.FC<TableServiceModalProps> = ({
               sound.playTap();
               onCancel();
             }}
-            className="w-10 h-10 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white text-[#4B5563] flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#4B5563] flex items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {mode === 'choose' ? (
-          <div className="p-8 grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="p-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Option 1: Table Service */}
             <button
               onClick={() => {
                 sound.playTap();
                 setMode('keypad');
               }}
-              className="group p-6 rounded-3xl bg-[#FFFBEB] hover:bg-mcd-yellow/20 border-2 border-mcd-yellow flex flex-col items-center text-center space-y-4 transition-all active:scale-95 shadow-sm"
+              className="group p-6 rounded-lg bg-[#FFFDF5] hover:bg-[#FFF9E6] border-2 border-[#FFBC0D] flex flex-col items-center text-center space-y-4 transition-colors"
             >
               {/* Yellow McDonald's Table Tent SVG */}
               <div className="w-24 h-24 rounded-2xl bg-white border border-mcd-yellow/40 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">

@@ -65,14 +65,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     blikCode.length > 3 ? `${blikCode.slice(0, 3)} ${blikCode.slice(3)}` : blikCode;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md select-none animate-fadeIn">
-      <div className="w-full max-w-2xl bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#1F1F1F]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 select-none">
+      <div className="w-full max-w-2xl bg-white border border-[#D4D4D4] rounded-xl flex flex-col overflow-hidden text-[#292929]">
         {/* Top Header */}
-        <div className="p-6 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center justify-between">
+        <div className="p-5 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <OfficialLogo className="w-9 h-8" />
             <div>
-              <h2 className="text-xl font-black text-[#111]">
+              <h2 className="text-xl font-extrabold text-[#111]">
                 {step === 'choose_method'
                   ? 'Wybierz sposób płatności'
                   : step === 'blik_input' || step === 'blik_confirming'
@@ -95,7 +95,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               sound.playTap();
               onCancel();
             }}
-            className="w-10 h-10 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white text-[#4B5563] flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#4B5563] flex items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

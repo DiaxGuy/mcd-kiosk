@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Globe, Utensils, ShoppingBag, Accessibility } from 'lucide-react';
+import React from 'react';
+import { Accessibility } from 'lucide-react';
 import { Language, OrderType } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
@@ -27,120 +27,74 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleAccessible,
 }) => {
   const t = translations[language];
-  const [time, setTime] = useState('');
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTime(now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }));
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const toggleOrderType = () => {
-    sound.playTap();
-    setOrderType(orderType === 'dine_in' ? 'take_away' : 'dine_in');
-  };
-
-  const toggleAccessible = () => {
-    sound.playTap();
-    onToggleAccessible();
-  };
 
   return (
-    <header className="h-18 py-3 bg-white border-b border-[#E5E7EB] px-6 flex items-center justify-between select-none z-20 shrink-0">
-      {/* Left: Official McDonald's Golden Arches & Category Header (as in photo) */}
-      <div className="flex items-center space-x-6">
+    <header className="h-16 bg-white border-b border-[#E5E5E5] flex items-center justify-between select-none z-20 shrink-0">
+      {/* Left: Logo Column aligned with Sidebar + Crisp Category Title */}
+      <div className="flex items-center h-full">
         <button
           onClick={() => {
             sound.playTap();
             onReset();
           }}
-          className="flex items-center space-x-3 transition-transform active:scale-95 group"
+          className="w-48 lg:w-56 h-full px-5 border-r border-[#E5E5E5] flex items-center justify-start gap-3 hover:bg-[#FAFAFA] transition-colors"
           title="Powrót do ekranu startowego"
         >
-          {/* Official Golden Arches "M" */}
-          <OfficialLogo className="w-12 h-11 text-mcd-yellow filter drop-shadow-sm group-hover:scale-105 transition-transform" />
+          <OfficialLogo className="w-10 h-9" />
         </button>
 
-        <div className="border-l border-[#E5E7EB] pl-6 py-1">
-          <h1 className="text-2xl font-black text-[#1F1F1F] tracking-tight leading-tight">
+        <div className="px-6">
+          <h1 className="text-2xl font-extrabold text-[#292929] tracking-tight leading-none">
             {currentCategoryTitle}
           </h1>
-          <p className="text-xs text-[#6B7280] font-medium">
-            Wybierz swoje ulubione pozycje z menu poniżej
-          </p>
         </div>
       </div>
 
-      {/* Right: Controls (Dining type, Language, Accessibility, Clock) */}
-      <div className="flex items-center space-x-3">
-        {/* Dining Mode Button */}
+      {/* Right: Clean Minimal McDonald's Utility Controls (No pill bubbles or emojis) */}
+      <div className="px-6 flex items-center space-x-2.5">
         <button
-          onClick={toggleOrderType}
-          className="px-4 py-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] border border-[#D1D5DB] text-xs font-bold text-[#1F1F1F] flex items-center gap-2 transition-all active:scale-95"
+          onClick={() => {
+            sound.playTap();
+            setOrderType(orderType === 'dine_in' ? 'take_away' : 'dine_in');
+          }}
+          className="h-9 px-3.5 rounded border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-xs font-bold text-[#292929] flex items-center gap-2 transition-colors"
         >
-          {orderType === 'dine_in' ? (
-            <>
-              <Utensils className="w-4 h-4 text-mcd-yellow" />
-              <span>{t.eatIn}</span>
-            </>
-          ) : (
-            <>
-              <ShoppingBag className="w-4 h-4 text-mcd-yellow" />
-              <span>{t.takeAway}</span>
-            </>
-          )}
-          <span className="text-[10px] text-[#4B5563] underline ml-1">Zmień</span>
+          <span>{orderType === 'dine_in' ? t.eatIn : t.takeAway}</span>
+          <span className="text-[11px] font-semibold text-[#6B7280] underline">Zmień</span>
         </button>
 
-        {/* Accessibility Button (Icon with circle as on photo) */}
         <button
-          onClick={toggleAccessible}
-          className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+          onClick={() => {
+            sound.playTap();
+            onToggleAccessible();
+          }}
+          className={`w-9 h-9 rounded border flex items-center justify-center transition-colors ${
             accessibleMode
-              ? 'bg-mcd-yellow text-black border-mcd-yellow shadow-md'
-              : 'bg-[#F3F4F6] text-[#4B5563] border-[#D1D5DB] hover:bg-[#E5E7EB]'
+              ? 'bg-[#FFBC0D] text-[#111] border-[#FFBC0D]'
+              : 'bg-white text-[#292929] border-[#D4D4D4] hover:bg-[#FAFAFA]'
           }`}
           title="Ułatwienia dostępu"
         >
-          <Accessibility className="w-5 h-5 stroke-[2.2]" />
+          <Accessibility className="w-4 h-4" />
         </button>
 
-        {/* Language Selector */}
-        <div className="flex items-center bg-[#F3F4F6] rounded-full border border-[#D1D5DB] p-1">
-          <button
-            onClick={() => { sound.playTap(); setLanguage('pl'); }}
-            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
-              language === 'pl' ? 'bg-mcd-yellow text-black shadow-sm' : 'text-[#6B7280] hover:text-[#111]'
-            }`}
-          >
-            🇵🇱 PL
-          </button>
-          <button
-            onClick={() => { sound.playTap(); setLanguage('en'); }}
-            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
-              language === 'en' ? 'bg-mcd-yellow text-black shadow-sm' : 'text-[#6B7280] hover:text-[#111]'
-            }`}
-          >
-            🇬🇧 EN
-          </button>
-          <button
-            onClick={() => { sound.playTap(); setLanguage('ua'); }}
-            className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
-              language === 'ua' ? 'bg-mcd-yellow text-black shadow-sm' : 'text-[#6B7280] hover:text-[#111]'
-            }`}
-          >
-            🇺🇦 UA
-          </button>
-        </div>
-
-        {/* Clock */}
-        <div className="hidden sm:flex items-center space-x-1.5 text-xs font-bold text-[#4B5563] bg-[#F3F4F6] px-3.5 py-2 rounded-full border border-[#D1D5DB]">
-          <Clock className="w-3.5 h-3.5 text-mcd-yellow" />
-          <span>{time}</span>
+        <div className="flex items-center border border-[#D4D4D4] rounded overflow-hidden bg-white h-9">
+          {(['pl', 'en', 'ua'] as Language[]).map((lang) => (
+            <button
+              key={lang}
+              onClick={() => {
+                sound.playTap();
+                setLanguage(lang);
+              }}
+              className={`h-full px-3 text-xs font-bold uppercase transition-colors ${
+                language === lang
+                  ? 'bg-[#FFBC0D] text-[#111111]'
+                  : 'text-[#6B7280] hover:text-[#111111]'
+              }`}
+            >
+              {lang}
+            </button>
+          ))}
         </div>
       </div>
     </header>

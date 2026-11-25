@@ -529,9 +529,8 @@ export const App: React.FC = () => {
 
         {/* Center Column: Product Grid (Snow White EOTF Canvas) */}
         <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
-          {/* Subheader: Category Sub-filters (Horizontal pills as in photo) & Search */}
-          <div className="h-14 px-6 border-b border-[#E5E7EB] flex items-center justify-between shrink-0 bg-white">
-            {/* Filter Pills (All, Burger, Chicken, Vege...) */}
+          {/* Subheader: Flat EOTF Sub-filter Tabs + Search */}
+          <div className="h-14 px-6 border-b border-[#E5E5E5] flex items-center justify-between shrink-0 bg-white">
             <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none py-1">
               {subFilters.map((pill) => {
                 const isActive = activeSubFilter === pill.id;
@@ -542,10 +541,10 @@ export const App: React.FC = () => {
                       sound.playTap();
                       setActiveSubFilter(pill.id);
                     }}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                    className={`px-4 py-1.5 rounded border text-xs transition-colors whitespace-nowrap ${
                       isActive
-                        ? 'bg-[#111111] text-white'
-                        : 'bg-[#F3F4F6] text-[#4B5563] hover:bg-[#E5E7EB]'
+                        ? 'bg-[#FFFDF5] border-[#FFBC0D] border-b-2 text-[#111111] font-extrabold'
+                        : 'bg-white border-[#E0E0E0] text-[#4A4A4A] font-semibold hover:bg-[#FAFAFA]'
                     }`}
                   >
                     {pill.label}
@@ -554,20 +553,19 @@ export const App: React.FC = () => {
               })}
             </div>
 
-            {/* Search Input Bar */}
-            <div className="relative w-60 lg:w-72">
-              <Search className="w-4 h-4 text-[#9CA3AF] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="relative w-56 lg:w-64">
+              <Search className="w-4 h-4 text-[#9CA3AF] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Szukaj w menu..."
-                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] focus:border-[#FFBC0D] rounded-full py-1.5 pl-10 pr-4 text-xs font-semibold text-[#111] placeholder-[#9CA3AF] outline-none transition-colors"
+                className="w-full bg-white border border-[#D4D4D4] focus:border-[#FFBC0D] rounded py-1.5 pl-9 pr-4 text-xs font-semibold text-[#111] placeholder-[#9CA3AF] outline-none transition-colors"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#9CA3AF] hover:text-[#111]"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#9CA3AF] hover:text-[#111]"
                 >
                   ✕
                 </button>
@@ -576,18 +574,18 @@ export const App: React.FC = () => {
           </div>
 
           {/* Product Cards Grid & Promo Banner */}
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin bg-white">
-            {/* Top Promotional Banner (Flat clean official banner as on kiosk photo) */}
-            <div className="mb-5 rounded-xl bg-[#F3F7FA] border border-[#E5E7EB] px-6 py-4 flex items-center justify-between relative overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-5 scrollbar-thin bg-white">
+            {/* Top Promotional Banner (Flat clean official banner) */}
+            <div className="mb-5 rounded-lg bg-[#EAF3F8] border border-[#D4E3EC] px-6 py-3.5 flex items-center justify-between relative overflow-hidden">
               <div className="space-y-1 z-10 max-w-md">
-                <span className="text-[10px] font-black uppercase tracking-wider text-white bg-[#DB0007] px-2 py-0.5 rounded-sm inline-block">
-                  Zima 2026
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-white bg-[#DB0007] px-2 py-0.5 rounded-[2px] inline-block">
+                  Oferta Zimowa
                 </span>
-                <h3 className="text-xl lg:text-2xl font-black text-[#111111] leading-tight">
-                  Chrupiący, złocisty &amp; kultowy
+                <h3 className="text-xl lg:text-2xl font-black text-[#292929] leading-tight">
+                  Chrupiący, złocisty i kultowy
                 </h3>
-                <p className="text-xs text-[#4B5563] font-semibold">
-                  Dotknij, aby zamówić Burgera Drwala lub chrupiące McNuggets® z sosem
+                <p className="text-xs text-[#4A4A4A] font-semibold">
+                  Burger Drwala oraz chrupiące Kurczak McNuggets®
                 </p>
               </div>
 
@@ -633,16 +631,16 @@ export const App: React.FC = () => {
           </div>
 
           {/* Official Bottom Bar (Matches the bottom bar on the photo!) */}
-          <div className="h-20 bg-white border-t border-[#E5E7EB] px-6 flex items-center justify-between shrink-0 z-10">
-            {/* Left: Yellow "MojeM" Login/Coupon Tile (as on photo) */}
+          <div className="h-20 bg-white border-t border-[#E5E5E5] px-6 flex items-center justify-between shrink-0 z-10">
+            {/* Left: Yellow "MojeM" Login/Coupon Block */}
             <button
               onClick={() => {
                 sound.playTap();
                 setShowCoupons(true);
               }}
-              className="flex items-center space-x-3 bg-[#FFBC0D] hover:bg-[#F5B300] rounded-lg px-4 py-2.5 text-black cursor-pointer transition-colors active:scale-95"
+              className="flex items-center space-x-3 bg-[#FFBC0D] hover:bg-[#F5B300] rounded-md px-4 py-2.5 text-[#111111] cursor-pointer transition-colors"
             >
-              <Smartphone className="w-6 h-6 shrink-0" />
+              <Smartphone className="w-5 h-5 shrink-0" />
               <div className="text-left leading-tight">
                 <span className="text-[10px] font-black uppercase tracking-wider block">
                   {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'MojeM'}
@@ -653,10 +651,10 @@ export const App: React.FC = () => {
               </div>
             </button>
 
-            {/* Center: Takeaway Bag with Red Counter Badge + Total Amount (as on photo) */}
+            {/* Center: Takeaway Bag with Red Counter Badge + Total Amount */}
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <ShoppingBag className="w-7 h-7 text-[#92400E]" />
+                <ShoppingBag className="w-6 h-6 text-[#92400E]" />
                 {cartTotalQuantity > 0 && (
                   <span className="absolute -top-1.5 -right-2 bg-[#DB0007] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
                     {cartTotalQuantity}
@@ -668,14 +666,14 @@ export const App: React.FC = () => {
               </span>
             </div>
 
-            {/* Right: Start Over + Flat Yellow Checkout Button (as on photo) */}
-            <div className="flex items-center space-x-4">
+            {/* Right: Start Over + Flat Yellow Checkout Button */}
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
                   sound.playTap();
                   handleClearCart();
                 }}
-                className="text-xs font-bold text-[#6B7280] hover:text-[#111] flex items-center gap-1.5 transition-colors"
+                className="px-4 py-2.5 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-xs font-bold text-[#4A4A4A] flex items-center gap-1.5 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Zacznij od nowa</span>
@@ -684,10 +682,10 @@ export const App: React.FC = () => {
               <button
                 onClick={handleStartCheckout}
                 disabled={cart.length === 0}
-                className={`px-8 py-3 rounded-lg font-black text-sm flex items-center gap-2 transition-colors ${
+                className={`px-7 py-2.5 rounded-md font-extrabold text-sm flex items-center gap-2 transition-colors ${
                   cart.length > 0
-                    ? 'bg-[#FFBC0D] hover:bg-[#F5B300] text-[#111111] active:scale-98'
-                    : 'bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed'
+                    ? 'bg-[#FFBC0D] hover:bg-[#F5B300] text-[#111111]'
+                    : 'bg-[#F0F0F0] text-[#A0A0A0] cursor-not-allowed'
                 }`}
               >
                 <span>{t.orderAndPay}</span>
@@ -697,18 +695,20 @@ export const App: React.FC = () => {
           </div>
         </main>
 
-        {/* Right Column: Order Cart Tray */}
-        <CartTray
-          items={cart}
-          onUpdateQuantity={handleUpdateQuantity}
-          onRemoveItem={handleRemoveFromCart}
-          onEditItem={handleEditCartItem}
-          onClearCart={handleClearCart}
-          onCheckout={handleStartCheckout}
-          appliedCoupon={appliedCoupon}
-          onOpenCoupons={() => setShowCoupons(true)}
-          language={language}
-        />
+        {/* Right Column: Order Cart Tray (Only shown when items are in cart so empty state stays pure & wide!) */}
+        {cart.length > 0 && (
+          <CartTray
+            items={cart}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveFromCart}
+            onEditItem={handleEditCartItem}
+            onClearCart={handleClearCart}
+            onCheckout={handleStartCheckout}
+            appliedCoupon={appliedCoupon}
+            onOpenCoupons={() => setShowCoupons(true)}
+            language={language}
+          />
+        )}
       </div>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, Plus, Minus, CheckCircle2, ChevronRight } from 'lucide-react';
+import { X, Check, Plus, Minus, ChevronRight } from 'lucide-react';
 import {
   MenuItem,
   MealSizeOption,
@@ -25,6 +25,11 @@ interface CustomizationModalProps {
   onAddToCart: (cartItem: CartItem) => void;
   language: Language;
 }
+
+const FRIES_IMG =
+  'https://cdn.mcdonalds.pl/uploads/20241104114431/354308-nowe-frytki-2024-na-www-1090x664px-2-frytki-srednie.png';
+const DRINK_IMG =
+  'https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png';
 
 export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   item,
@@ -94,15 +99,6 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   const currentStepIdx = wizardSteps.indexOf(activeTab);
   const hasNextStep = !editingCartItem && currentStepIdx >= 0 && currentStepIdx < wizardSteps.length - 1;
 
-  const handleNextStep = () => {
-    sound.playTap();
-    if (hasNextStep) {
-      setActiveTab(wizardSteps[currentStepIdx + 1]);
-    } else {
-      handleConfirm();
-    }
-  };
-
   const toggleIngredient = (ing: CustomIngredient) => {
     sound.playTap();
     const exists = selectedIngredients.find((i) => i.id === ing.id);
@@ -149,17 +145,37 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
     onClose();
   };
 
+  const handleNextStep = () => {
+    sound.playTap();
+    if (hasNextStep) {
+      setActiveTab(wizardSteps[currentStepIdx + 1]);
+    } else {
+      handleConfirm();
+    }
+  };
+
+  const tabMeta: Record<'meal' | 'side' | 'drink' | 'sauces' | 'ingredients', { label: string; sub?: string }> = {
+    meal: { label: 'Rozmiar' },
+    side: { label: 'Dodatek', sub: selectedSide?.name.split(' ')[0] },
+    drink: { label: 'Napój', sub: selectedDrink?.name.split(' ')[0] },
+    sauces: { label: 'Sosy' },
+    ingredients: {
+      label: 'Składniki',
+      sub: selectedIngredients.length > 0 ? `${selectedIngredients.length}` : undefined,
+    },
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm select-none animate-fadeIn">
-      <div className="w-full max-w-5xl h-[85vh] bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#1F1F1F]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 select-none">
+      <div className="w-full max-w-5xl h-[86vh] bg-white border border-[#D4D4D4] rounded-xl flex flex-col overflow-hidden text-[#292929]">
         {/* Modal Top Header */}
-        <div className="h-20 px-8 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
-          <div className="flex items-center space-x-5">
-            <img src={item.image} alt={item.name} className="w-16 h-16 object-contain" />
+        <div className="h-20 px-7 bg-white border-b border-[#E5E5E5] flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-4">
+            <img src={item.image} alt={item.name} className="w-16 h-14 object-contain" />
             <div>
-              <h2 className="text-xl lg:text-2xl font-black text-[#111]">{item.name}</h2>
-              <span className="text-xs text-[#6B7280] font-bold">
-                Cena bazowa: {item.price.toFixed(2)} zł
+              <h2 className="text-xl lg:text-2xl font-extrabold text-[#111] tracking-tight">{item.name}</h2>
+              <span className="text-xs text-[#6B7280] font-semibold">
+                Cena bazowa: {item.price.toFixed(2).replace('.', ',')} zł
               </span>
             </div>
           </div>
@@ -169,94 +185,55 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               sound.playTap();
               onClose();
             }}
-            className="w-10 h-10 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white text-[#4B5563] flex items-center justify-center transition-colors shadow-sm"
+            className="w-9 h-9 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#4B5563] hover:text-[#111] flex items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Horizontal Navigation Tabs */}
-        <div className="px-8 py-3 bg-[#F3F4F6] border-b border-[#E5E7EB] flex items-center space-x-3 shrink-0 overflow-x-auto scrollbar-none">
-          {item.isCustomizable && (
-            <button
-              onClick={() => { sound.playTap(); setActiveTab('meal'); }}
-              className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                activeTab === 'meal'
-                  ? 'bg-mcd-yellow text-black shadow-sm font-black'
-                  : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
-              }`}
-            >
-              <span>Rozmiar zestawu</span>
-              {selectedMealSize !== 'single' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-            </button>
-          )}
-
-          {item.isCustomizable && (
-            <button
-              onClick={() => { sound.playTap(); setActiveTab('ingredients'); }}
-              className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                activeTab === 'ingredients'
-                  ? 'bg-mcd-yellow text-black shadow-sm font-black'
-                  : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
-              }`}
-            >
-              <span>Modyfikacja składników</span>
-              {selectedIngredients.length > 0 && (
-                <span className="bg-mcd-red text-white text-xs px-1.5 py-0.2 rounded-full font-black">
-                  {selectedIngredients.length}
+        {/* Clean Step Tabs (Flat underline bar, no bubbly pills) */}
+        <div className="px-7 bg-[#FAFAFA] border-b border-[#E5E5E5] flex items-stretch space-x-1 shrink-0 overflow-x-auto scrollbar-none">
+          {wizardSteps.map((stepKey, idx) => {
+            const isActive = activeTab === stepKey;
+            const meta = tabMeta[stepKey];
+            return (
+              <button
+                key={stepKey}
+                onClick={() => {
+                  sound.playTap();
+                  setActiveTab(stepKey);
+                }}
+                className={`relative px-5 py-3.5 text-sm transition-colors flex items-center gap-2 whitespace-nowrap ${
+                  isActive
+                    ? 'text-[#111111] font-extrabold bg-white'
+                    : 'text-[#6B7280] hover:text-[#111111] font-semibold'
+                }`}
+              >
+                <span
+                  className={`w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center ${
+                    isActive ? 'bg-[#FFBC0D] text-[#111]' : 'bg-[#E5E5E5] text-[#4B5563]'
+                  }`}
+                >
+                  {idx + 1}
                 </span>
-              )}
-            </button>
-          )}
-
-          {item.isCustomizable && selectedMealSize !== 'single' && (
-            <>
-              <button
-                onClick={() => { sound.playTap(); setActiveTab('side'); }}
-                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                  activeTab === 'side'
-                    ? 'bg-mcd-yellow text-black shadow-sm font-black'
-                    : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
-                }`}
-              >
-                <span>Wybór dodatku</span>
-                <span className="text-xs opacity-75">({selectedSide.name.split(' ')[0]})</span>
+                <span>{meta.label}</span>
+                {meta.sub && (
+                  <span className="text-[11px] text-[#6B7280] font-normal">({meta.sub})</span>
+                )}
+                {isActive && (
+                  <div className="absolute left-0 right-0 bottom-0 h-[3px] bg-[#FFBC0D]" />
+                )}
               </button>
-
-              <button
-                onClick={() => { sound.playTap(); setActiveTab('drink'); }}
-                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                  activeTab === 'drink'
-                    ? 'bg-mcd-yellow text-black shadow-sm font-black'
-                    : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
-                }`}
-              >
-                <span>Wybór napoju</span>
-                <span className="text-xs opacity-75">({selectedDrink.name.split(' ')[0]})</span>
-              </button>
-            </>
-          )}
-
-          {item.isBoxOrNuggets && (
-            <button
-              onClick={() => { sound.playTap(); setActiveTab('sauces'); }}
-              className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                activeTab === 'sauces'
-                  ? 'bg-mcd-yellow text-black shadow-sm font-black'
-                  : 'bg-white text-[#4B5563] hover:text-black border border-[#E5E7EB]'
-              }`}
-            >
-              <span>Wybór sosów do kurczaka</span>
-            </button>
-          )}
+            );
+          })}
         </div>
 
         {/* Tab Body Content */}
-        <div className="flex-1 overflow-y-auto p-8 scrollbar-thin bg-white">
+        <div className="flex-1 overflow-y-auto p-7 scrollbar-thin bg-white">
           {/* TAB 1: MEAL SIZE */}
           {activeTab === 'meal' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-[#111] mb-2">{t.chooseVariant}</h3>
+              <h3 className="text-lg font-extrabold text-[#111]">{t.chooseVariant}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {mealSizes.map((size) => {
                   const isSelected = selectedMealSize === size.id;
@@ -269,48 +246,58 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         sound.playTap();
                         setSelectedMealSize(size.id);
                       }}
-                      className={`relative bg-white border-2 rounded-2xl p-5 cursor-pointer transition-colors flex flex-col justify-between ${
+                      className={`relative bg-white border-2 rounded-lg p-5 cursor-pointer transition-colors flex flex-col justify-between overflow-hidden ${
                         isSelected
                           ? 'border-[#FFBC0D] bg-[#FFFDF5]'
-                          : 'border-[#E5E7EB] hover:border-[#D1D5DB]'
+                          : 'border-[#E5E5E5] hover:border-[#BDBDBD]'
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold">
-                          <Check className="w-4 h-4 stroke-[3]" />
+                        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center z-20">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
                         </div>
                       )}
 
-                      {/* Real Food Packshot Visual Composition */}
-                      <div className="h-28 flex items-center justify-center gap-1 my-2">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-24 object-contain"
-                        />
-                        {size.id !== 'single' && (
-                          <>
+                      {/* Bounded Meal Packshot (Strictly contained inside card!) */}
+                      <div className="w-full h-28 flex items-end justify-center overflow-hidden my-2">
+                        {size.id === 'single' ? (
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="h-24 w-auto max-w-[75%] object-contain"
+                          />
+                        ) : (
+                          <div className="w-full max-w-[210px] h-24 flex items-end justify-center px-2">
                             <img
-                              src="https://cdn.mcdonalds.pl/uploads/20241104114431/354308-nowe-frytki-2024-na-www-1090x664px-2-frytki-srednie.png"
+                              src={item.image}
+                              alt={item.name}
+                              className="w-[44%] h-20 object-contain z-10 shrink-0"
+                            />
+                            <img
+                              src={FRIES_IMG}
                               alt="Frytki"
-                              className={size.id === 'large' ? 'h-24 object-contain -ml-3' : 'h-20 object-contain -ml-3'}
+                              className={`w-[30%] object-contain -ml-3 shrink-0 ${
+                                size.id === 'large' ? 'h-22' : 'h-18'
+                              }`}
                             />
                             <img
-                              src="https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png"
+                              src={DRINK_IMG}
                               alt="Napój"
-                              className={size.id === 'large' ? 'h-24 object-contain -ml-3' : 'h-20 object-contain -ml-3'}
+                              className={`w-[28%] object-contain -ml-2 shrink-0 ${
+                                size.id === 'large' ? 'h-24' : 'h-20'
+                              }`}
                             />
-                          </>
+                          </div>
                         )}
                       </div>
 
-                      <div className="space-y-1 text-center">
-                        <span className="text-lg font-black text-[#111] block">{size.name}</span>
+                      <div className="space-y-1 text-center mt-1">
+                        <span className="text-lg font-extrabold text-[#111] block">{size.name}</span>
                         <p className="text-xs text-[#6B7280] leading-snug">{size.desc}</p>
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-[#F3F4F6] flex items-baseline justify-between">
-                        <span className="text-xs text-[#6B7280] font-bold">Cena:</span>
+                      <div className="mt-4 pt-3 border-t border-[#F0F0F0] flex items-baseline justify-between">
+                        <span className="text-xs text-[#6B7280] font-semibold">Cena:</span>
                         <span className="text-lg font-black text-[#111]">
                           {price.toFixed(2).replace('.', ',')} zł
                         </span>
@@ -326,16 +313,15 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {activeTab === 'ingredients' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-black text-[#111]">{t.customizeIngredients}</h3>
+                <h3 className="text-lg font-extrabold text-[#111]">{t.customizeIngredients}</h3>
                 <p className="text-xs text-[#6B7280] mt-0.5">
-                  Dodaj ulubione składniki lub usuń te, za którymi nie przepadasz!
+                  Dodaj dodatkowe składniki lub usuń te, których nie chcesz
                 </p>
               </div>
 
-              {/* Add extras */}
               <div>
-                <span className="text-xs font-black uppercase tracking-wider text-emerald-700 block mb-3">
-                  ✚ Dodatkowe składniki (Ekstra)
+                <span className="text-xs font-extrabold uppercase tracking-wider text-[#008837] block mb-3">
+                  Dodatkowe składniki
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {availableIngredients
@@ -346,21 +332,21 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         <button
                           key={ing.id}
                           onClick={() => toggleIngredient(ing)}
-                          className={`p-4 rounded-2xl border-2 text-left flex items-center justify-between transition-all ${
+                          className={`p-3.5 rounded-lg border text-left flex items-center justify-between transition-colors ${
                             isSelected
-                              ? 'border-emerald-500 bg-emerald-50 text-[#111]'
-                              : 'border-[#E5E7EB] bg-white text-[#374151] hover:border-[#CBD5E1]'
+                              ? 'border-[#008837] bg-[#F2FBF5] text-[#111]'
+                              : 'border-[#E5E5E5] bg-white text-[#292929] hover:border-[#BDBDBD]'
                           }`}
                         >
                           <div>
                             <span className="font-bold text-sm block">{ing.name}</span>
-                            <span className="text-xs font-black text-[#111]">
-                              +{ing.price.toFixed(2)} zł
+                            <span className="text-xs font-bold text-[#6B7280]">
+                              +{ing.price.toFixed(2).replace('.', ',')} zł
                             </span>
                           </div>
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                              isSelected ? 'bg-emerald-500 text-white' : 'bg-[#F3F4F6] text-[#6B7280]'
+                              isSelected ? 'bg-[#008837] text-white' : 'bg-[#F3F4F6] text-[#6B7280]'
                             }`}
                           >
                             {isSelected ? '✓' : '+'}
@@ -371,10 +357,9 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 </div>
               </div>
 
-              {/* Remove components */}
               <div>
-                <span className="text-xs font-black uppercase tracking-wider text-red-600 block mb-3">
-                  ✖ Usuń składnik
+                <span className="text-xs font-extrabold uppercase tracking-wider text-[#DB0007] block mb-3">
+                  Usuń składnik
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {availableIngredients
@@ -385,10 +370,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         <button
                           key={ing.id}
                           onClick={() => toggleIngredient(ing)}
-                          className={`p-4 rounded-2xl border-2 text-left flex items-center justify-between transition-all ${
+                          className={`p-3.5 rounded-lg border text-left flex items-center justify-between transition-colors ${
                             isSelected
-                              ? 'border-red-500 bg-red-50 text-[#111]'
-                              : 'border-[#E5E7EB] bg-white text-[#374151] hover:border-[#CBD5E1]'
+                              ? 'border-[#DB0007] bg-[#FEF2F2] text-[#111]'
+                              : 'border-[#E5E5E5] bg-white text-[#292929] hover:border-[#BDBDBD]'
                           }`}
                         >
                           <div>
@@ -397,10 +382,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                           </div>
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                              isSelected ? 'bg-red-500 text-white' : 'bg-[#F3F4F6] text-[#9CA3AF]'
+                              isSelected ? 'bg-[#DB0007] text-white' : 'bg-[#F3F4F6] text-[#9CA3AF]'
                             }`}
                           >
-                            {isSelected ? '✖' : '−'}
+                            {isSelected ? '✕' : '−'}
                           </div>
                         </button>
                       );
@@ -413,7 +398,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {/* TAB 3: SIDE */}
           {activeTab === 'side' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-[#111]">{t.chooseSide}</h3>
+              <h3 className="text-lg font-extrabold text-[#111]">{t.chooseSide}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {availableSides.map((side) => {
                   const isSelected = selectedSide.id === side.id;
@@ -424,14 +409,14 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         sound.playTap();
                         setSelectedSide(side);
                       }}
-                      className={`relative p-4 rounded-xl border-2 flex flex-col items-center text-center cursor-pointer transition-colors ${
+                      className={`relative p-4 rounded-lg border-2 flex flex-col items-center text-center cursor-pointer transition-colors ${
                         isSelected
                           ? 'border-[#FFBC0D] bg-[#FFFDF5]'
-                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                          : 'border-[#E5E5E5] bg-white hover:border-[#BDBDBD]'
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-xs">
+                        <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-[11px]">
                           ✓
                         </div>
                       )}
@@ -442,8 +427,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                           className="h-24 w-full object-contain my-2"
                         />
                       )}
-                      <span className="font-extrabold text-sm text-[#111] block leading-tight">{side.name}</span>
-                      <span className="text-xs font-bold text-[#6B7280] mt-1">
+                      <span className="font-bold text-sm text-[#111] block leading-tight">{side.name}</span>
+                      <span className="text-xs font-semibold text-[#6B7280] mt-1">
                         {side.extraPrice > 0 ? `+${side.extraPrice.toFixed(2).replace('.', ',')} zł` : 'W cenie zestawu'}
                       </span>
                     </div>
@@ -456,7 +441,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {/* TAB 4: DRINK */}
           {activeTab === 'drink' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-[#111]">{t.chooseDrink}</h3>
+              <h3 className="text-lg font-extrabold text-[#111]">{t.chooseDrink}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {availableDrinks.map((drink) => {
                   const isSelected = selectedDrink.id === drink.id;
@@ -467,24 +452,24 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         sound.playTap();
                         setSelectedDrink(drink);
                       }}
-                      className={`relative p-4 rounded-xl border-2 flex flex-col items-center text-center cursor-pointer transition-colors ${
+                      className={`relative p-4 rounded-lg border-2 flex flex-col items-center text-center cursor-pointer transition-colors ${
                         isSelected
                           ? 'border-[#FFBC0D] bg-[#FFFDF5]'
-                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
+                          : 'border-[#E5E5E5] bg-white hover:border-[#BDBDBD]'
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-xs">
+                        <div className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-[11px]">
                           ✓
                         </div>
                       )}
                       <img
-                        src={drink.image || 'https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png'}
+                        src={drink.image || DRINK_IMG}
                         alt={drink.name}
                         className="h-24 w-full object-contain my-2"
                       />
-                      <span className="font-extrabold text-sm text-[#111] block leading-tight">{drink.name}</span>
-                      <span className="text-xs font-bold text-[#6B7280] mt-1">
+                      <span className="font-bold text-sm text-[#111] block leading-tight">{drink.name}</span>
+                      <span className="text-xs font-semibold text-[#6B7280] mt-1">
                         {drink.extraPrice > 0 ? `+${drink.extraPrice.toFixed(2).replace('.', ',')} zł` : 'W cenie zestawu'}
                       </span>
                     </div>
@@ -498,9 +483,9 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {activeTab === 'sauces' && (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-lg font-black text-[#111]">{t.chooseSauces}</h3>
+                <h3 className="text-lg font-extrabold text-[#111]">{t.chooseSauces}</h3>
                 {freeSauceQuota > 0 && (
-                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+                  <span className="px-3 py-1 rounded bg-[#E6F4EA] text-[#008837] text-xs font-extrabold">
                     Darmowe sosy w zestawie: {Math.min(totalSelectedSauces, freeSauceQuota)} / {freeSauceQuota}
                   </span>
                 )}
@@ -511,8 +496,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                   return (
                     <div
                       key={sauce.id}
-                      className={`p-4 rounded-xl border-2 flex flex-col items-center text-center justify-between space-y-2 transition-colors ${
-                        count > 0 ? 'border-[#FFBC0D] bg-[#FFFDF5]' : 'border-[#E5E7EB] bg-white'
+                      className={`p-4 rounded-lg border-2 flex flex-col items-center text-center justify-between space-y-2 transition-colors ${
+                        count > 0 ? 'border-[#FFBC0D] bg-[#FFFDF5]' : 'border-[#E5E5E5] bg-white'
                       }`}
                     >
                       {sauce.image && (
@@ -523,20 +508,22 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         />
                       )}
                       <div>
-                        <span className="font-extrabold text-sm text-[#111] block leading-tight">{sauce.name}</span>
-                        <span className="text-xs text-[#6B7280] font-semibold">{sauce.price.toFixed(2).replace('.', ',')} zł / szt.</span>
+                        <span className="font-bold text-sm text-[#111] block leading-tight">{sauce.name}</span>
+                        <span className="text-xs text-[#6B7280] font-semibold">
+                          {sauce.price.toFixed(2).replace('.', ',')} zł / szt.
+                        </span>
                       </div>
                       <div className="flex items-center space-x-3 pt-1">
                         <button
                           onClick={() => updateSauceCount(sauce.id, -1)}
-                          className="w-8 h-8 rounded-lg bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111] flex items-center justify-center font-bold text-sm"
+                          className="w-8 h-8 rounded border border-[#D4D4D4] bg-white hover:bg-[#F5F5F5] text-[#111] flex items-center justify-center font-bold text-sm"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
                         <span className="w-5 text-center font-black text-base text-[#111]">{count}</span>
                         <button
                           onClick={() => updateSauceCount(sauce.id, 1)}
-                          className="w-8 h-8 rounded-lg bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-sm"
+                          className="w-8 h-8 rounded bg-[#FFBC0D] hover:bg-[#F5B300] text-black flex items-center justify-center font-bold text-sm"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -550,28 +537,28 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
         </div>
 
         {/* Modal Bottom Action Bar */}
-        <div className="h-24 px-8 bg-white border-t border-[#E5E7EB] flex items-center justify-between shrink-0 shadow-sm">
+        <div className="h-20 px-7 bg-white border-t border-[#E5E5E5] flex items-center justify-between shrink-0">
           <div>
-            <span className="text-xs uppercase font-extrabold text-[#6B7280] block">Łączna kwota</span>
-            <span className="text-2xl lg:text-3xl font-black text-[#111]">
+            <span className="text-[11px] uppercase font-bold text-[#6B7280] block">Łączna kwota</span>
+            <span className="text-2xl font-black text-[#111]">
               {unitPrice.toFixed(2).replace('.', ',')} zł
             </span>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <button
               onClick={() => {
                 sound.playTap();
                 onClose();
               }}
-              className="px-6 py-3.5 rounded-2xl bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111] font-bold text-sm transition-colors"
+              className="px-6 py-3 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#292929] font-bold text-sm transition-colors"
             >
               {t.cancel}
             </button>
 
             <button
               onClick={handleNextStep}
-              className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-base flex items-center gap-2 shadow-sm transition-all active:scale-98"
+              className="px-8 py-3 rounded-md bg-[#FFBC0D] hover:bg-[#F5B300] text-[#111111] font-extrabold text-sm flex items-center gap-2 transition-colors active:scale-[0.98]"
             >
               <span>
                 {editingCartItem
@@ -580,7 +567,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                   ? `Dalej (Krok ${currentStepIdx + 2}/${wizardSteps.length})`
                   : t.addToOrder}
               </span>
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

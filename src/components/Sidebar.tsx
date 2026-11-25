@@ -9,7 +9,6 @@ interface SidebarProps {
   language: Language;
 }
 
-// Official real product packshots from cdn.mcdonalds.pl for each category
 const CATEGORY_IMAGES: Record<string, string> = {
   'co-nowego': 'https://cdn.mcdonalds.pl/uploads/20261104143818/pl10-p00001662-drwal-2026-na-www-1090x664px-burger-drwala-klasyczny.png',
   'burgery': 'https://cdn.mcdonalds.pl/uploads/20240702143550/354267-big-mac-na-www-1090x664px-big-mac-2.png',
@@ -32,8 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   language,
 }) => {
   return (
-    <aside className="w-48 lg:w-56 bg-white border-r border-[#E5E7EB] flex flex-col h-full overflow-y-auto select-none shrink-0 scrollbar-thin">
-      <nav className="flex flex-col divide-y divide-[#F3F4F6]">
+    <aside className="w-48 lg:w-56 bg-white border-r border-[#E5E5E5] flex flex-col h-full overflow-y-auto select-none shrink-0 scrollbar-thin py-1">
+      <nav className="flex flex-col">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat.id;
           const displayName = language === 'en' ? cat.nameEn : language === 'ua' ? cat.nameUa : cat.name;
@@ -46,39 +45,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 sound.playTap();
                 onSelectCategory(cat.id);
               }}
-              className={`group relative w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-[#FFF9E6] ${
+              className={`group relative w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                 isActive
-                  ? 'bg-[#FFFDF5] text-[#111111]'
-                  : 'bg-white text-[#4B5563] hover:bg-[#FAFAFA] hover:text-[#111111]'
+                  ? 'bg-[#FFFDF4] text-[#111111]'
+                  : 'bg-white text-[#4A4A4A] hover:bg-[#FAFAFA] hover:text-[#111111]'
               }`}
             >
-              {/* Official left yellow indicator bar */}
               {isActive && (
-                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#FFBC0D]" />
+                <div className="absolute left-0 top-1 bottom-1 w-1 bg-[#FFBC0D]" />
               )}
 
-              {/* Real product packshot thumbnail */}
-              <div className="w-11 h-9 flex items-center justify-center shrink-0">
+              <div className="w-10 h-8 flex items-center justify-center shrink-0">
                 <img
                   src={imgSrc}
                   alt={displayName}
-                  className={`max-h-9 max-w-11 object-contain transition-transform ${
-                    isActive ? 'scale-110' : 'group-hover:scale-105'
-                  }`}
+                  className="max-h-8 max-w-10 object-contain"
                 />
               </div>
 
-              {/* Category Name + Tag */}
-              <div className="flex-1 min-w-0">
-                <span className={`block text-xs lg:text-[13px] leading-tight truncate ${isActive ? 'font-black text-[#111111]' : 'font-bold'}`}>
-                  {displayName}
-                </span>
-                {cat.tag && (
-                  <span className="inline-block mt-0.5 text-[9px] font-black px-1.5 py-0.2 rounded bg-[#DB0007] text-white uppercase tracking-wider">
-                    {cat.tag}
-                  </span>
-                )}
-              </div>
+              <span className={`block text-[13px] leading-tight truncate ${isActive ? 'font-extrabold text-[#111111]' : 'font-semibold'}`}>
+                {displayName}
+              </span>
             </button>
           );
         })}
