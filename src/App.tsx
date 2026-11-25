@@ -30,17 +30,22 @@ import { CouponsModal } from './components/CouponsModal';
 import { OrderBoardScreen } from './components/OrderBoardScreen';
 import { InactivityModal } from './components/InactivityModal';
 import { NutritionModal } from './components/NutritionModal';
+import { KitchenScreen } from './components/KitchenScreen';
 import { translations } from './utils/translations';
 import { sound } from './utils/audio';
 import { Search, Sparkles, QrCode, Smartphone, ShoppingBag, ArrowRight, RotateCcw, Accessibility } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Navigation & View states
-  const initialBoard =
-    typeof window !== 'undefined' &&
-    (window.location.pathname === '/ekran' || window.location.pathname === '/board');
-  const [view, setView] = useState<'attract' | 'menu' | 'confirmed' | 'board'>(
-    initialBoard ? 'board' : 'attract'
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const initialView =
+    pathname === '/kuchnia'
+      ? 'kitchen'
+      : pathname === '/ekran' || pathname === '/board'
+      ? 'board'
+      : 'attract';
+  const [view, setView] = useState<'attract' | 'menu' | 'confirmed' | 'board' | 'kitchen'>(
+    initialView
   );
   const [orderType, setOrderType] = useState<OrderType>('dine_in');
   const [language, setLanguage] = useState<Language>('pl');
@@ -410,7 +415,12 @@ export const App: React.FC = () => {
     setView('attract');
   };
 
-  // 0. ORDER STATUS BOARD (/ekran)
+  // 0a. KITCHEN KDS (/kuchnia - PIN protected, unreachable from regular UI)
+  if (view === 'kitchen') {
+    return <KitchenScreen />;
+  }
+
+  // 0b. ORDER STATUS BOARD (/ekran)
   if (view === 'board') {
     return (
       <OrderBoardScreen
@@ -743,10 +753,6 @@ export const App: React.FC = () => {
       {/* 3. Payment Modal */}
       {showPayment && (
         <PaymentModal
-          items={cart}
-          orderType={orderType}
-          tableNumber={tableNumber}
-          appliedCoupon={appliedCoupon}
           totalAmount={cartTotalAmount}
           onPaymentSuccess={handlePaymentSuccess}
           onCancel={() => setShowPayment(false)}

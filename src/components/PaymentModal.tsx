@@ -1,78 +1,50 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote, X, CheckCircle, ArrowRight, AlertCircle, ExternalLink } from 'lucide-react';
-import { PaymentMethod, Language, CartItem, OrderType, AppliedCoupon } from '../types';
-import { translations } from '../utils/translations';
+import { Banknote, X, CheckCircle, ArrowRight, Smartphone, Delete, ShieldCheck } from 'lucide-react';
+import { PaymentMethod, Language } from '../types';
 import { sound } from '../utils/audio';
 import { OfficialLogo } from './OfficialLogo';
 
 interface PaymentModalProps {
-  items: CartItem[];
-  orderType: OrderType;
-  tableNumber?: string | null;
-  appliedCoupon?: AppliedCoupon | null;
   totalAmount: number;
-  onPaymentSuccess: (method: PaymentMethod, paymentIntentId?: string) => void;
+  onPaymentSuccess: (method: PaymentMethod) => void;
   onCancel: () => void;
   language: Language;
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
-  items,
-  orderType,
-  tableNumber = null,
-  appliedCoupon = null,
   totalAmount,
   onPaymentSuccess,
   onCancel,
-  language,
 }) => {
-  const t = translations[language];
+  const [step, setStep] = useState<'choose_method' | 'blik_input' | 'blik_confirming' | 'cashier_confirm' | 'approved'>('choose_method');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('blik');
+  const [blikCode, setBlikCode] = useState('');
 
-  // Screen steps: 'choose_method' | 'stripe_redirect' | 'cashier_confirm' | 'approved'
-  const [step, setStep] = useState<'choose_method' | 'stripe_redirect' | 'cashier_confirm' | 'approved'>('choose_method');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('stripe');
-
-  // Stripe Checkout redirect state
-  const [stripeLoading, setStripeLoading] = useState(false);
-  const [stripeError, setStripeError] = useState<string | null>(null);
-
-  // Create Stripe Checkout Session and redirect user to hosted Stripe page
-  const handleSelectStripe = async () => {
+  const handleDigit = (digit: string) => {
     sound.playTap();
-    setSelectedMethod('stripe');
-    setStep('stripe_redirect');
-    setStripeLoading(true);
-    setStripeError(null);
-
-    try {
-      sessionStorage.setItem(
-        'mcd_pending_checkout',
-        JSON.stringify({ cart: items, orderType, tableNumber, appliedCoupon })
-      );
-
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items,
-          orderType,
-          tableNumber,
-          appliedCoupon,
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.url) {
-        window.location.href = data.url;
-        return;
-      } else {
-        throw new Error(data.error || 'Nie udało się utworzyć sesji Stripe Checkout');
-      }
-    } catch (err: any) {
-      console.error('Failed to create Checkout Session:', err);
-      setStripeError(err.message || 'Błąd połączenia z bramką Stripe');
-      setStripeLoading(false);
+    if (blikCode.length < 6) {
+      setBlikCode((prev) => prev + digit);
     }
+  };
+
+  const handleBackspace = () => {
+    sound.playTap();
+    setBlikCode((prev) => prev.slice(0, -1));
+  };
+
+  const handleBlikSubmit = () => {
+    if (blikCode.length !== 6) return;
+    sound.playTap();
+    setStep('blik_confirming');
+
+    // Simulate bank app confirmation
+    setTimeout(() => {
+      sound.playSuccess();
+      setStep('approved');
+      setTimeout(() => {
+        onPaymentSuccess('blik');
+      }, 1100);
+    }, 1800);
   };
 
   const handleSelectCashier = () => {
@@ -86,15 +58,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setStep('approved');
     setTimeout(() => {
       onPaymentSuccess('cashier');
-    }, 1200);
+    }, 1100);
   };
 
-  const handleStripeSuccess = (paymentIntentId: string) => {
-    setStep('approved');
-    setTimeout(() => {
-      onPaymentSuccess('stripe', paymentIntentId);
-    }, 1500);
-  };
+  const formattedBlik =
+    blikCode.length > 3 ? `${blikCode.slice(0, 3)} ${blikCode.slice(3)}` : blikCode;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md select-none animate-fadeIn">
@@ -107,8 +75,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               <h2 className="text-xl font-black text-[#111]">
                 {step === 'choose_method'
                   ? 'Wybierz sposób płatności'
-                  : step === 'stripe_redirect'
-                  ? 'Przekierowanie do Stripe'
+                  : step === 'blik_input' || step === 'blik_confirming'
+                  ? 'Płatność BLIK'
+                  : step === 'approved'
+                  ? 'Płatność zakończona'
                   : 'Płatność przy kasie'}
               </h2>
               <span className="text-xs text-[#6B7280]">
@@ -131,7 +101,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </button>
         </div>
 
-        {/* STEP 1: CHOOSE PAYMENT METHOD (Only 2 choices as requested: Zapłać tutaj kartą / Zapłać przy kasie) */}
+        {/* STEP 1: CHOOSE PAYMENT METHOD */}
         {step === 'choose_method' && (
           <div className="p-8 space-y-4">
             <div className="text-center mb-2">
@@ -140,21 +110,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </span>
             </div>
 
-            {/* 1. Zapłać tutaj kartą (Stripe) */}
+            {/* 1. Zapłać BLIK-iem */}
             <button
-              onClick={handleSelectStripe}
+              onClick={() => {
+                sound.playTap();
+                setSelectedMethod('blik');
+                setBlikCode('');
+                setStep('blik_input');
+              }}
               className="group w-full p-6 rounded-2xl bg-white hover:bg-[#FFFBEB] border-2 border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
             >
               <div className="flex items-center space-x-5">
-                <div className="w-16 h-16 rounded-2xl bg-mcd-yellow text-black flex items-center justify-center font-bold shadow-sm">
-                  <CreditCard className="w-9 h-9" />
+                <div className="w-16 h-16 rounded-2xl bg-[#111111] text-white flex flex-col items-center justify-center font-black shadow-sm">
+                  <span className="text-base tracking-tight leading-none">BLIK</span>
+                  <span className="w-6 h-1 bg-[#E11D48] rounded-full mt-1" />
                 </div>
                 <div className="text-left">
                   <span className="text-xl font-black text-[#111] block group-hover:text-mcd-red transition-colors">
-                    Zapłać tutaj kartą (Stripe)
+                    Zapłać BLIK-iem
                   </span>
                   <span className="text-xs text-[#6B7280] block mt-0.5 font-medium">
-                    Karta płatnicza, kredytowa lub debetowa • Bezpieczna bramka Stripe Sandbox
+                    Wpisz 6-cyfrowy kod z aplikacji bankowej
                   </span>
                 </div>
               </div>
@@ -184,51 +160,105 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         )}
 
-        {/* STEP 2: STRIPE CHECKOUT REDIRECT */}
-        {step === 'stripe_redirect' && (
-          <div className="p-8 space-y-6 bg-[#FAFAFA] text-center">
-            {stripeLoading && !stripeError && (
-              <div className="py-10 flex flex-col items-center justify-center space-y-4">
-                <div className="w-12 h-12 border-4 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
-                <div className="space-y-1">
-                  <h3 className="text-lg font-black text-[#111] flex items-center justify-center gap-2">
-                    <span>Przekierowywanie na stronę Stripe...</span>
-                    <ExternalLink className="w-5 h-5 text-mcd-yellow" />
-                  </h3>
-                  <p className="text-xs text-[#6B7280]">
-                    Za chwilę zostaniesz przeniesiony do bezpiecznej strony płatności Stripe Sandbox.
-                  </p>
-                </div>
+        {/* STEP 2: FAKE BLIK 6-DIGIT KEYPAD */}
+        {step === 'blik_input' && (
+          <div className="p-8 flex flex-col sm:flex-row items-center gap-8 bg-[#FAFAFA]">
+            {/* Left: BLIK Code Display */}
+            <div className="flex-1 flex flex-col items-center text-center space-y-4">
+              <div className="px-4 py-1.5 rounded-xl bg-[#111111] text-white font-black text-lg tracking-wider inline-flex items-center gap-2">
+                <span>BLIK</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48]" />
               </div>
-            )}
 
-            {stripeError && (
-              <div className="p-5 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm space-y-3 text-left">
-                <div className="flex items-center gap-2 font-bold">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  <span>Nie udało się przekierować do Stripe</span>
-                </div>
-                <p className="text-xs">{stripeError}</p>
-                <div className="flex items-center gap-3 pt-1">
-                  <button
-                    onClick={handleSelectStripe}
-                    className="px-4 py-2 rounded-xl bg-mcd-yellow text-black font-black text-xs"
-                  >
-                    Spróbuj ponownie
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      sound.playTap();
-                      setStep('choose_method');
-                    }}
-                    className="px-4 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#111] font-bold text-xs"
-                  >
-                    Wróć
-                  </button>
-                </div>
+              <div>
+                <p className="text-sm font-extrabold text-[#111]">Wpisz 6-cyfrowy kod BLIK</p>
+                <p className="text-xs text-[#6B7280] mt-0.5">
+                  Otwórz aplikację banku i podaj dowolne 6 cyfr
+                </p>
               </div>
-            )}
+
+              {/* 6-digit box */}
+              <div className="w-full max-w-xs py-4 px-5 bg-white border-2 border-mcd-yellow rounded-2xl shadow-inner">
+                <span className="font-mono text-4xl font-black tracking-[0.2em] text-[#111]">
+                  {formattedBlik || '___ ___'}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playTap();
+                  setStep('choose_method');
+                }}
+                className="text-xs font-bold text-[#6B7280] hover:text-[#111] underline"
+              >
+                ← Wróć do wyboru metody płatności
+              </button>
+            </div>
+
+            {/* Right: Touch Numeric Keypad */}
+            <div className="w-full max-w-xs space-y-3">
+              <div className="grid grid-cols-3 gap-2">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => handleDigit(d)}
+                    className="h-13 py-3 rounded-2xl bg-white border border-[#E5E7EB] hover:bg-mcd-yellow text-[#111] font-black text-xl transition-all active:scale-95 shadow-sm"
+                  >
+                    {d}
+                  </button>
+                ))}
+                <button
+                  onClick={() => {
+                    sound.playTap();
+                    setBlikCode('');
+                  }}
+                  className="py-3 rounded-2xl bg-red-50 hover:bg-red-100 text-mcd-red font-extrabold text-xs transition-all active:scale-95"
+                >
+                  WYCZYŚĆ
+                </button>
+                <button
+                  onClick={() => handleDigit('0')}
+                  className="py-3 rounded-2xl bg-white border border-[#E5E7EB] hover:bg-mcd-yellow text-[#111] font-black text-xl transition-all active:scale-95 shadow-sm"
+                >
+                  0
+                </button>
+                <button
+                  onClick={handleBackspace}
+                  className="py-3 rounded-2xl bg-white border border-[#E5E7EB] hover:bg-[#E5E7EB] text-[#111] flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                >
+                  <Delete className="w-5 h-5" />
+                </button>
+              </div>
+
+              <button
+                onClick={handleBlikSubmit}
+                disabled={blikCode.length !== 6}
+                className="w-full py-4 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF] text-black font-black text-base flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+              >
+                <ShieldCheck className="w-5 h-5" />
+                <span>Zapłać {totalAmount.toFixed(2).replace('.', ',')} zł</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2B: BLIK BANK APP CONFIRMATION */}
+        {step === 'blik_confirming' && (
+          <div className="p-12 flex flex-col items-center justify-center text-center space-y-5">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-3xl bg-[#111111] text-white flex items-center justify-center shadow-lg">
+                <Smartphone className="w-10 h-10 text-mcd-yellow animate-pulse" />
+              </div>
+              <div className="w-6 h-6 rounded-full bg-[#E11D48] border-2 border-white absolute -top-1 -right-1 animate-ping" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-2xl font-black text-[#111]">Potwierdź w aplikacji bankowej</h3>
+              <p className="text-sm text-[#6B7280] max-w-sm">
+                Wysłaliśmy powiadomienie BLIK na Twój telefon (kod <strong className="font-mono text-[#111]">{formattedBlik}</strong>)...
+              </p>
+            </div>
+            <div className="w-10 h-10 border-4 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
@@ -282,9 +312,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
             <h3 className="text-2xl font-black text-[#111]">PŁATNOŚĆ ZAAKCEPTOWANA</h3>
             <p className="text-sm text-[#6B7280]">
-              {selectedMethod === 'stripe'
-                ? 'Transakcja Stripe powiodła się! Drukujemy paragon...'
-                : 'Zamówienie przekazane do kasy! Drukujemy numerek...'}
+              {selectedMethod === 'blik'
+                ? 'Płatność BLIK potwierdzona! Drukujemy paragon...'
+                : 'Zamówienie wysłane! Podejdź do kasy z numerkiem.'}
             </p>
           </div>
         )}

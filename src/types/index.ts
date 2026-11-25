@@ -1,6 +1,6 @@
 export type Language = 'pl' | 'en' | 'ua';
 export type OrderType = 'dine_in' | 'take_away';
-export type PaymentMethod = 'stripe' | 'cashier' | 'card' | 'blik';
+export type PaymentMethod = 'blik' | 'cashier';
 
 export interface Category {
   id: string;

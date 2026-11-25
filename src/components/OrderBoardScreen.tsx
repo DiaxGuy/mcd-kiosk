@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ChefHat, CheckCircle2, Clock, Volume2, Utensils } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, Volume2, Utensils } from 'lucide-react';
 import { Order } from '../types';
 import { OfficialLogo } from './OfficialLogo';
 import { sound } from '../utils/audio';
@@ -10,7 +10,6 @@ interface OrderBoardScreenProps {
 
 export const OrderBoardScreen: React.FC<OrderBoardScreenProps> = ({ onBackToKiosk }) => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [showKitchenPanel, setShowKitchenPanel] = useState(true);
   const [time, setTime] = useState('');
   const prevReadySet = useRef<Set<string>>(new Set());
 
@@ -21,7 +20,6 @@ export const OrderBoardScreen: React.FC<OrderBoardScreenProps> = ({ onBackToKios
       const data = await res.json();
       const list: Order[] = data.orders || [];
 
-      // Play chime when a new order transitions to 'ready'
       const currentReady = new Set(
         list.filter((o) => o.kitchenStatus === 'ready').map((o) => o.orderNumber)
       );
@@ -56,21 +54,6 @@ export const OrderBoardScreen: React.FC<OrderBoardScreenProps> = ({ onBackToKios
     return () => clearInterval(timer);
   }, []);
 
-  const updateOrderStatus = async (orderNumber: string, kitchenStatus: 'preparing' | 'ready' | 'completed') => {
-    sound.playTap();
-    if (kitchenStatus === 'ready') sound.playSuccess();
-    try {
-      await fetch(`/api/orders/${orderNumber}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kitchenStatus }),
-      });
-      await fetchOrders();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const preparingOrders = orders.filter((o) => (o.kitchenStatus || 'preparing') === 'preparing');
   const readyOrders = orders.filter((o) => o.kitchenStatus === 'ready');
 
@@ -96,21 +79,6 @@ export const OrderBoardScreen: React.FC<OrderBoardScreenProps> = ({ onBackToKios
             <Clock className="w-4 h-4 text-mcd-yellow" />
             <span>{time}</span>
           </div>
-
-          <button
-            onClick={() => {
-              sound.playTap();
-              setShowKitchenPanel((v) => !v);
-            }}
-            className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 border transition-colors ${
-              showKitchenPanel
-                ? 'bg-mcd-yellow text-black border-mcd-yellow'
-                : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
-            }`}
-          >
-            <ChefHat className="w-4 h-4" />
-            <span>Panel Kuchni</span>
-          </button>
 
           <button
             onClick={() => {
@@ -147,10 +115,7 @@ export const OrderBoardScreen: React.FC<OrderBoardScreenProps> = ({ onBackToKios
               {preparingOrders.map((order) => (
                 <div
                   key={order.orderNumber}
-                  onClick={() => showKitchenPanel && updateOrderStatus(order.orderNumber, 'ready')}
-                  className={`p-5 rounded-2xl bg-[#1F1F1F] border border-white/10 text-center transition-all ${
-                    showKitchenPanel ? 'cursor-pointer hover:border-mcd-yellow active:scale-95' : ''
-                  }`}
+                  className="p-5 rounded-2xl bg-[#1F1F1F] border border-white/10 text-center"
                 >
                   <span className="text-5xl font-black tracking-tight text-white block">
                     {order.orderNumber}
@@ -187,10 +152,7 @@ export const OrderBoardScreen: React.FC<OrderBoardScreenProps> = ({ onBackToKios
               {readyOrders.map((order) => (
                 <div
                   key={order.orderNumber}
-                  onClick={() => showKitchenPanel && updateOrderStatus(order.orderNumber, 'completed')}
-                  className={`p-6 rounded-3xl bg-emerald-600 text-white text-center shadow-xl border-2 border-emerald-400 transition-all animate-fadeIn ${
-                    showKitchenPanel ? 'cursor-pointer hover:bg-emerald-500 active:scale-95' : ''
-                  }`}
+                  className="p-6 rounded-3xl bg-emerald-600 text-white text-center shadow-xl border-2 border-emerald-400 animate-fadeIn"
                 >
                   <span className="text-6xl font-black tracking-tight block">
                     {order.orderNumber}
@@ -210,17 +172,6 @@ export const OrderBoardScreen: React.FC<OrderBoardScreenProps> = ({ onBackToKios
           )}
         </div>
       </div>
-
-      {/* Kitchen Hint Footer */}
-      {showKitchenPanel && (
-        <div className="h-12 px-8 bg-[#1F1F1F] border-t border-white/10 flex items-center justify-between text-xs text-gray-300 shrink-0">
-          <span className="font-bold flex items-center gap-2">
-            <ChefHat className="w-4 h-4 text-mcd-yellow" />
-            Tryb Panelu Kuchni aktywny: kliknij numer w lewej kolumnie, aby oznaczyć jako <strong className="text-emerald-400">Gotowe</strong>; kliknij gotowy numer po prawej, aby wydać i usunąć z tablicy.
-          </span>
-          <span className="text-gray-500 font-mono">/ekran</span>
-        </div>
-      )}
     </div>
   );
 };
