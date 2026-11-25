@@ -59,6 +59,52 @@ export const App: React.FC = () => {
 
   const t = translations[language];
 
+  // Handle return from Stripe Checkout hosted page
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stripeStatus = params.get('stripe_status');
+    const sessionId = params.get('session_id');
+
+    if (!stripeStatus) return;
+
+    // Clean URL query params
+    window.history.replaceState({}, '', '/');
+
+    if (stripeStatus === 'success' && sessionId) {
+      fetch(`/api/checkout-session/${encodeURIComponent(sessionId)}`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Failed to verify Stripe session');
+          return res.json();
+        })
+        .then((orderData: Order) => {
+          sessionStorage.removeItem('mcd_pending_checkout');
+          setCart([]);
+          setCompletedOrder(orderData);
+          setView('confirmed');
+        })
+        .catch((err) => {
+          console.error('Stripe return verification failed:', err);
+        });
+    } else if (stripeStatus === 'cancelled') {
+      try {
+        const saved = sessionStorage.getItem('mcd_pending_checkout');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed.cart) && parsed.cart.length > 0) {
+            setCart(parsed.cart);
+          }
+          if (parsed.orderType) {
+            setOrderType(parsed.orderType);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not restore pending cart:', e);
+      }
+      setView('menu');
+      setShowPayment(true);
+    }
+  }, []);
+
   // Fetch menu from Express API
   useEffect(() => {
     fetch('/api/menu')
@@ -542,6 +588,8 @@ export const App: React.FC = () => {
       {/* 3. Payment Modal */}
       {showPayment && (
         <PaymentModal
+          items={cart}
+          orderType={orderType}
           totalAmount={cartTotalAmount}
           onPaymentSuccess={handlePaymentSuccess}
           onCancel={() => setShowPayment(false)}

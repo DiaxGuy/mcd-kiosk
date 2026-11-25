@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
-import { CreditCard, Banknote, X, CheckCircle, Wifi, Lock, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
-import { PaymentMethod, Language } from '../types';
+import React, { useState } from 'react';
+import { CreditCard, Banknote, X, CheckCircle, ArrowRight, AlertCircle, ExternalLink } from 'lucide-react';
+import { PaymentMethod, Language, CartItem, OrderType } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
 import { OfficialLogo } from './OfficialLogo';
-import { StripePaymentForm } from './StripePaymentForm';
-
-// Initialize Stripe with Publishable Key provided by user
-const STRIPE_PK = atob('cGtfdGVzdF81MVVad2VvR2RjaXU5eDNSaGdPa0d0ZFlrbGp6Y29wWUZYVDZiYVFrZ2RiWnRMSHZ2Rnl0TlZERmJyQVprcUJjNXNEN00zUnZsNEg1OWNYa0xHSThLSmNwZjAwcUo0SGZPdXI=');
-const stripePromise = loadStripe(STRIPE_PK);
 
 interface PaymentModalProps {
+  items: CartItem[];
+  orderType: OrderType;
   totalAmount: number;
   onPaymentSuccess: (method: PaymentMethod, paymentIntentId?: string) => void;
   onCancel: () => void;
@@ -20,6 +15,8 @@ interface PaymentModalProps {
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
+  items,
+  orderType,
   totalAmount,
   onPaymentSuccess,
   onCancel,
@@ -27,43 +24,47 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const t = translations[language];
 
-  // Screen steps: 'choose_method' | 'stripe_card' | 'cashier_confirm' | 'approved'
-  const [step, setStep] = useState<'choose_method' | 'stripe_card' | 'cashier_confirm' | 'approved'>('choose_method');
+  // Screen steps: 'choose_method' | 'stripe_redirect' | 'cashier_confirm' | 'approved'
+  const [step, setStep] = useState<'choose_method' | 'stripe_redirect' | 'cashier_confirm' | 'approved'>('choose_method');
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('stripe');
 
-  // Stripe PaymentIntent state
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  // Stripe Checkout redirect state
   const [stripeLoading, setStripeLoading] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
 
-  // Initialize PaymentIntent when choosing Stripe card
+  // Create Stripe Checkout Session and redirect user to hosted Stripe page
   const handleSelectStripe = async () => {
     sound.playTap();
     setSelectedMethod('stripe');
-    setStep('stripe_card');
+    setStep('stripe_redirect');
     setStripeLoading(true);
     setStripeError(null);
 
     try {
-      const res = await fetch('/api/create-payment-intent', {
+      sessionStorage.setItem(
+        'mcd_pending_checkout',
+        JSON.stringify({ cart: items, orderType })
+      );
+
+      const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: totalAmount,
-          currency: 'pln',
+          items,
+          orderType,
         }),
       });
 
       const data = await res.json();
-      if (res.ok && data.clientSecret) {
-        setClientSecret(data.clientSecret);
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+        return;
       } else {
-        throw new Error(data.error || 'Nie udało się zainicjować płatności');
+        throw new Error(data.error || 'Nie udało się utworzyć sesji Stripe Checkout');
       }
     } catch (err: any) {
-      console.error('Failed to create PaymentIntent:', err);
+      console.error('Failed to create Checkout Session:', err);
       setStripeError(err.message || 'Błąd połączenia z bramką Stripe');
-    } finally {
       setStripeLoading(false);
     }
   };
@@ -98,7 +99,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <OfficialLogo className="w-9 h-8" />
             <div>
               <h2 className="text-xl font-black text-[#111]">
-                {step === 'choose_method' ? 'Wybierz sposób płatności' : step === 'stripe_card' ? 'Płatność kartą (Stripe)' : 'Płatność przy kasie'}
+                {step === 'choose_method'
+                  ? 'Wybierz sposób płatności'
+                  : step === 'stripe_redirect'
+                  ? 'Przekierowanie do Stripe'
+                  : 'Płatność przy kasie'}
               </h2>
               <span className="text-xs text-[#6B7280]">
                 Łączna kwota do zapłaty:{' '}
@@ -173,76 +178,51 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         )}
 
-        {/* STEP 2: STRIPE CARD PAYMENT (Embedded Stripe Elements) */}
-        {step === 'stripe_card' && (
-          <div className="p-8 space-y-6 bg-[#FAFAFA]">
-            {/* Instruction Banner */}
-            <div className="bg-white border border-[#E5E7EB] p-4 rounded-2xl flex items-center justify-between shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-mcd-yellow/20 text-[#92400E] flex items-center justify-center font-bold">
-                  <Lock className="w-5 h-5 text-mcd-yellow" />
+        {/* STEP 2: STRIPE CHECKOUT REDIRECT */}
+        {step === 'stripe_redirect' && (
+          <div className="p-8 space-y-6 bg-[#FAFAFA] text-center">
+            {stripeLoading && !stripeError && (
+              <div className="py-10 flex flex-col items-center justify-center space-y-4">
+                <div className="w-12 h-12 border-4 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
+                <div className="space-y-1">
+                  <h3 className="text-lg font-black text-[#111] flex items-center justify-center gap-2">
+                    <span>Przekierowywanie na stronę Stripe...</span>
+                    <ExternalLink className="w-5 h-5 text-mcd-yellow" />
+                  </h3>
+                  <p className="text-xs text-[#6B7280]">
+                    Za chwilę zostaniesz przeniesiony do bezpiecznej strony płatności Stripe Sandbox.
+                  </p>
                 </div>
-                <div>
-                  <h4 className="text-sm font-extrabold text-[#111]">Wprowadź dane karty lub użyj karty testowej</h4>
-                  <p className="text-xs text-[#6B7280]">Płatność procesowana w środowisku testowym Stripe</p>
-                </div>
-              </div>
-
-              <span className="text-lg font-black text-[#111]">
-                {totalAmount.toFixed(2).replace('.', ',')} zł
-              </span>
-            </div>
-
-            {/* Stripe Loading State */}
-            {stripeLoading && (
-              <div className="py-12 flex flex-col items-center justify-center space-y-3">
-                <div className="w-10 h-10 border-4 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm font-bold text-[#6B7280]">Łączenie z bramką płatności Stripe...</span>
               </div>
             )}
 
-            {/* Stripe Error State */}
             {stripeError && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm space-y-2">
+              <div className="p-5 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm space-y-3 text-left">
                 <div className="flex items-center gap-2 font-bold">
                   <AlertCircle className="w-5 h-5 text-red-600" />
-                  <span>Nie udało się połączyć z bramką Stripe</span>
+                  <span>Nie udało się przekierować do Stripe</span>
                 </div>
                 <p className="text-xs">{stripeError}</p>
-                <button
-                  onClick={handleSelectStripe}
-                  className="mt-2 px-4 py-2 rounded-xl bg-mcd-yellow text-black font-black text-xs"
-                >
-                  Spróbuj ponownie
-                </button>
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    onClick={handleSelectStripe}
+                    className="px-4 py-2 rounded-xl bg-mcd-yellow text-black font-black text-xs"
+                  >
+                    Spróbuj ponownie
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playTap();
+                      setStep('choose_method');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#111] font-bold text-xs"
+                  >
+                    Wróć
+                  </button>
+                </div>
               </div>
             )}
-
-            {/* Embedded Stripe Elements Form */}
-            {!stripeLoading && clientSecret && (
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <StripePaymentForm
-                  clientSecret={clientSecret}
-                  totalAmount={totalAmount}
-                  onSuccess={handleStripeSuccess}
-                  onError={(err) => console.warn(err)}
-                />
-              </Elements>
-            )}
-
-            {/* Back button */}
-            <div className="pt-2 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  sound.playTap();
-                  setStep('choose_method');
-                }}
-                className="text-xs font-bold text-[#6B7280] hover:text-[#111] underline"
-              >
-                ← Wróć do wyboru metody płatności
-              </button>
-            </div>
           </div>
         )}
 

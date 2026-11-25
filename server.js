@@ -46,6 +46,32 @@ try {
 // In-memory orders with auto-cycling order number (01 - 99)
 let currentOrderNumber = 41;
 const orders = [];
+const pendingSessions = new Map();
+
+function createOrderRecord({ items, orderType, paymentMethod, totalAmount, paymentIntentId }) {
+  currentOrderNumber = (currentOrderNumber % 99) + 1;
+  const orderNumberStr = String(currentOrderNumber).padStart(2, '0');
+  const receiptNumber = 'PAR/' + Math.floor(100000 + Math.random() * 900000) + '/' + new Date().getFullYear();
+
+  const newOrder = {
+    orderNumber: orderNumberStr,
+    receiptNumber,
+    orderType: orderType || 'dine_in',
+    items,
+    totalAmount: Number(totalAmount || 0),
+    paymentMethod: paymentMethod || 'stripe',
+    paymentIntentId: paymentIntentId || null,
+    paymentStatus: 'completed',
+    kioskId: 'K-04',
+    createdAt: new Date().toISOString()
+  };
+
+  orders.unshift(newOrder);
+  if (orders.length > 200) orders.pop();
+
+  console.log(`[ORDER CREATED] #${orderNumberStr} - ${newOrder.orderType} - ${newOrder.totalAmount} PLN via ${newOrder.paymentMethod}`);
+  return newOrder;
+}
 
 // Health check for Coolify / Docker
 app.get('/health', (req, res) => {
@@ -97,6 +123,128 @@ app.post('/api/create-payment-intent', async (req, res) => {
   }
 });
 
+// Create Stripe Checkout Session (Hosted Stripe Page Redirect)
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const { items, orderType = 'dine_in' } = req.body;
+    if (!items || !items.length) {
+      return res.status(400).json({ error: 'Koszyk jest pusty' });
+    }
+
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    const baseUrl = req.headers.origin || `${proto}://${host}`;
+
+    const lineItems = items.map((item) => {
+      const qty = Math.max(1, Number(item.quantity || 1));
+      const unitPln = Number(item.unitPrice ?? (Number(item.totalPrice || 0) / qty));
+      const unitAmount = Math.max(100, Math.round(unitPln * 100));
+      const baseName = item.menuItem?.name || item.name || "Produkt McDonald's";
+      const sizeLabel =
+        item.mealSize === 'large'
+          ? ' (Powiększony McZestaw)'
+          : item.mealSize === 'medium'
+          ? ' (McZestaw)'
+          : '';
+      const imageUrl = item.menuItem?.image;
+
+      return {
+        price_data: {
+          currency: 'pln',
+          unit_amount: unitAmount,
+          product_data: {
+            name: `${baseName}${sizeLabel}`,
+            ...(imageUrl && imageUrl.startsWith('http') ? { images: [imageUrl] } : {}),
+          },
+        },
+        quantity: qty,
+      };
+    });
+
+    const totalAmount = items.reduce((sum, i) => sum + Number(i.totalPrice || 0), 0);
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      success_url: `${baseUrl}/?stripe_status=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/?stripe_status=cancelled`,
+      metadata: {
+        kioskId: 'K-04',
+        orderType,
+      },
+    });
+
+    pendingSessions.set(session.id, {
+      items,
+      orderType,
+      totalAmount,
+      createdAt: Date.now(),
+    });
+
+    res.json({
+      url: session.url,
+      id: session.id,
+    });
+  } catch (err) {
+    console.error('Stripe Checkout Session error:', err);
+    res.status(500).json({ error: err.message || 'Błąd tworzenia sesji Stripe Checkout' });
+  }
+});
+
+// Verify Stripe Checkout Session and finalize order
+app.get('/api/checkout-session/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status !== 'paid') {
+      return res.status(400).json({ error: 'Płatność nie została jeszcze zakończona' });
+    }
+
+    const paymentIntentId = typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : session.id;
+
+    // Return existing order if already finalized (idempotent)
+    const existing = orders.find((o) => o.paymentIntentId === paymentIntentId);
+    if (existing) {
+      return res.json(existing);
+    }
+
+    const pending = pendingSessions.get(sessionId);
+    const items = pending?.items || [
+      {
+        cartId: 'stripe-fallback',
+        menuItem: { id: 'stripe', name: "Zamówienie McDonald's", price: (session.amount_total || 0) / 100 },
+        quantity: 1,
+        mealSize: 'single',
+        customIngredients: [],
+        selectedSauces: [],
+        unitPrice: (session.amount_total || 0) / 100,
+        totalPrice: (session.amount_total || 0) / 100,
+      },
+    ];
+    const orderType = pending?.orderType || session.metadata?.orderType || 'dine_in';
+    const totalAmount = pending?.totalAmount ?? (session.amount_total || 0) / 100;
+
+    pendingSessions.delete(sessionId);
+
+    const newOrder = createOrderRecord({
+      items,
+      orderType,
+      paymentMethod: 'stripe',
+      totalAmount,
+      paymentIntentId,
+    });
+
+    res.json(newOrder);
+  } catch (err) {
+    console.error('Stripe session verify error:', err);
+    res.status(500).json({ error: err.message || 'Błąd weryfikacji płatności Stripe' });
+  }
+});
+
 // Menu API
 app.get('/api/menu', (req, res) => {
   res.json({
@@ -119,27 +267,13 @@ app.post('/api/orders', (req, res) => {
     return res.status(400).json({ error: 'Order must contain items' });
   }
 
-  currentOrderNumber = (currentOrderNumber % 99) + 1;
-  const orderNumberStr = String(currentOrderNumber).padStart(2, '0');
-  const receiptNumber = 'PAR/' + Math.floor(100000 + Math.random() * 900000) + '/' + new Date().getFullYear();
-
-  const newOrder = {
-    orderNumber: orderNumberStr,
-    receiptNumber,
-    orderType: orderType || 'dine_in',
+  const newOrder = createOrderRecord({
     items,
-    totalAmount: Number(totalAmount || 0),
-    paymentMethod: paymentMethod || 'stripe',
-    paymentIntentId: paymentIntentId || null,
-    paymentStatus: 'completed',
-    kioskId: 'K-04',
-    createdAt: new Date().toISOString()
-  };
-
-  orders.unshift(newOrder);
-  if (orders.length > 200) orders.pop();
-
-  console.log(`[ORDER CREATED] #${orderNumberStr} - ${orderType} - ${totalAmount} PLN via ${paymentMethod}`);
+    orderType,
+    paymentMethod,
+    totalAmount,
+    paymentIntentId,
+  });
   res.status(201).json(newOrder);
 });
 
