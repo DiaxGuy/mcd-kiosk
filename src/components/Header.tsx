@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="h-20 bg-white border-b border-[#E5E7EB] px-8 flex items-center justify-between select-none z-20 shrink-0 shadow-sm">
+    <header className="h-18 py-3 bg-white border-b border-[#E5E7EB] px-6 flex items-center justify-between select-none z-20 shrink-0">
       {/* Left: Official McDonald's Golden Arches & Category Header (as in photo) */}
       <div className="flex items-center space-x-6">
         <button

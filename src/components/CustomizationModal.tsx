@@ -252,7 +252,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
         </div>
 
         {/* Tab Body Content */}
-        <div className="flex-1 overflow-y-auto p-8 scrollbar-thin bg-[#FAFAFA]">
+        <div className="flex-1 overflow-y-auto p-8 scrollbar-thin bg-white">
           {/* TAB 1: MEAL SIZE */}
           {activeTab === 'meal' && (
             <div className="space-y-4">
@@ -269,26 +269,49 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         sound.playTap();
                         setSelectedMealSize(size.id);
                       }}
-                      className={`relative bg-white border-2 rounded-3xl p-6 cursor-pointer transition-all flex flex-col justify-between shadow-sm ${
+                      className={`relative bg-white border-2 rounded-2xl p-5 cursor-pointer transition-colors flex flex-col justify-between ${
                         isSelected
-                          ? 'border-mcd-yellow bg-[#FFFBEB] shadow-md'
-                          : 'border-[#E5E7EB] hover:border-[#CBD5E1]'
+                          ? 'border-[#FFBC0D] bg-[#FFFDF5]'
+                          : 'border-[#E5E7EB] hover:border-[#D1D5DB]'
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-mcd-yellow text-black flex items-center justify-center font-bold">
+                        <div className="absolute top-3.5 right-3.5 w-7 h-7 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold">
                           <Check className="w-4 h-4 stroke-[3]" />
                         </div>
                       )}
 
-                      <div className="space-y-2">
-                        <span className="text-xl font-black text-[#111] block">{size.name}</span>
-                        <p className="text-xs text-[#6B7280] leading-relaxed">{size.desc}</p>
+                      {/* Real Food Packshot Visual Composition */}
+                      <div className="h-28 flex items-center justify-center gap-1 my-2">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="h-24 object-contain"
+                        />
+                        {size.id !== 'single' && (
+                          <>
+                            <img
+                              src="https://cdn.mcdonalds.pl/uploads/20241104114431/354308-nowe-frytki-2024-na-www-1090x664px-2-frytki-srednie.png"
+                              alt="Frytki"
+                              className={size.id === 'large' ? 'h-24 object-contain -ml-3' : 'h-20 object-contain -ml-3'}
+                            />
+                            <img
+                              src="https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png"
+                              alt="Napój"
+                              className={size.id === 'large' ? 'h-24 object-contain -ml-3' : 'h-20 object-contain -ml-3'}
+                            />
+                          </>
+                        )}
                       </div>
 
-                      <div className="mt-8 pt-4 border-t border-[#E5E7EB] flex items-baseline justify-between">
-                        <span className="text-xs text-[#6B7280] font-bold">Cena razem:</span>
-                        <span className="text-xl font-black text-[#111]">
+                      <div className="space-y-1 text-center">
+                        <span className="text-lg font-black text-[#111] block">{size.name}</span>
+                        <p className="text-xs text-[#6B7280] leading-snug">{size.desc}</p>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-[#F3F4F6] flex items-baseline justify-between">
+                        <span className="text-xs text-[#6B7280] font-bold">Cena:</span>
+                        <span className="text-lg font-black text-[#111]">
                           {price.toFixed(2).replace('.', ',')} zł
                         </span>
                       </div>
@@ -391,7 +414,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {activeTab === 'side' && (
             <div className="space-y-4">
               <h3 className="text-lg font-black text-[#111]">{t.chooseSide}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {availableSides.map((side) => {
                   const isSelected = selectedSide.id === side.id;
                   return (
@@ -401,25 +424,28 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         sound.playTap();
                         setSelectedSide(side);
                       }}
-                      className={`p-4 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${
+                      className={`relative p-4 rounded-xl border-2 flex flex-col items-center text-center cursor-pointer transition-colors ${
                         isSelected
-                          ? 'border-mcd-yellow bg-[#FFFBEB] shadow-sm'
-                          : 'border-[#E5E7EB] bg-white hover:border-[#CBD5E1]'
+                          ? 'border-[#FFBC0D] bg-[#FFFDF5]'
+                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                       }`}
                     >
-                      <div>
-                        <span className="font-bold text-sm text-[#111] block">{side.name}</span>
-                        <span className="text-xs font-bold text-[#6B7280]">
-                          {side.extraPrice > 0 ? `+${side.extraPrice.toFixed(2)} zł` : 'W cenie zestawu'}
-                        </span>
-                      </div>
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                          isSelected ? 'bg-mcd-yellow text-black' : 'bg-[#F3F4F6] text-[#9CA3AF]'
-                        }`}
-                      >
-                        {isSelected && '✓'}
-                      </div>
+                      {isSelected && (
+                        <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-xs">
+                          ✓
+                        </div>
+                      )}
+                      {side.image && (
+                        <img
+                          src={side.image}
+                          alt={side.name}
+                          className="h-24 w-full object-contain my-2"
+                        />
+                      )}
+                      <span className="font-extrabold text-sm text-[#111] block leading-tight">{side.name}</span>
+                      <span className="text-xs font-bold text-[#6B7280] mt-1">
+                        {side.extraPrice > 0 ? `+${side.extraPrice.toFixed(2).replace('.', ',')} zł` : 'W cenie zestawu'}
+                      </span>
                     </div>
                   );
                 })}
@@ -431,7 +457,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {activeTab === 'drink' && (
             <div className="space-y-4">
               <h3 className="text-lg font-black text-[#111]">{t.chooseDrink}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {availableDrinks.map((drink) => {
                   const isSelected = selectedDrink.id === drink.id;
                   return (
@@ -441,25 +467,26 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                         sound.playTap();
                         setSelectedDrink(drink);
                       }}
-                      className={`p-4 rounded-2xl border-2 flex items-center justify-between cursor-pointer transition-all ${
+                      className={`relative p-4 rounded-xl border-2 flex flex-col items-center text-center cursor-pointer transition-colors ${
                         isSelected
-                          ? 'border-mcd-yellow bg-[#FFFBEB] shadow-sm'
-                          : 'border-[#E5E7EB] bg-white hover:border-[#CBD5E1]'
+                          ? 'border-[#FFBC0D] bg-[#FFFDF5]'
+                          : 'border-[#E5E7EB] bg-white hover:border-[#D1D5DB]'
                       }`}
                     >
-                      <div>
-                        <span className="font-bold text-sm text-[#111] block">{drink.name}</span>
-                        <span className="text-xs font-bold text-[#6B7280]">
-                          {drink.extraPrice > 0 ? `+${drink.extraPrice.toFixed(2)} zł` : 'W cenie zestawu'}
-                        </span>
-                      </div>
-                      <div
-                        className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                          isSelected ? 'bg-mcd-yellow text-black' : 'bg-[#F3F4F6] text-[#9CA3AF]'
-                        }`}
-                      >
-                        {isSelected && '✓'}
-                      </div>
+                      {isSelected && (
+                        <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-xs">
+                          ✓
+                        </div>
+                      )}
+                      <img
+                        src={drink.image || 'https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png'}
+                        alt={drink.name}
+                        className="h-24 w-full object-contain my-2"
+                      />
+                      <span className="font-extrabold text-sm text-[#111] block leading-tight">{drink.name}</span>
+                      <span className="text-xs font-bold text-[#6B7280] mt-1">
+                        {drink.extraPrice > 0 ? `+${drink.extraPrice.toFixed(2).replace('.', ',')} zł` : 'W cenie zestawu'}
+                      </span>
                     </div>
                   );
                 })}
@@ -478,31 +505,40 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                   </span>
                 )}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {availableSauces.map((sauce) => {
                   const count = selectedSauces[sauce.id] || 0;
                   return (
                     <div
                       key={sauce.id}
-                      className="p-4 rounded-2xl border border-[#E5E7EB] bg-white flex items-center justify-between"
+                      className={`p-4 rounded-xl border-2 flex flex-col items-center text-center justify-between space-y-2 transition-colors ${
+                        count > 0 ? 'border-[#FFBC0D] bg-[#FFFDF5]' : 'border-[#E5E7EB] bg-white'
+                      }`}
                     >
+                      {sauce.image && (
+                        <img
+                          src={sauce.image}
+                          alt={sauce.name}
+                          className="h-20 w-full object-contain"
+                        />
+                      )}
                       <div>
-                        <span className="font-bold text-sm text-[#111] block">{sauce.name}</span>
-                        <span className="text-xs text-[#6B7280]">{sauce.price.toFixed(2)} zł / szt.</span>
+                        <span className="font-extrabold text-sm text-[#111] block leading-tight">{sauce.name}</span>
+                        <span className="text-xs text-[#6B7280] font-semibold">{sauce.price.toFixed(2).replace('.', ',')} zł / szt.</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3 pt-1">
                         <button
                           onClick={() => updateSauceCount(sauce.id, -1)}
-                          className="w-7 h-7 rounded-lg bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111] flex items-center justify-center font-bold text-sm"
+                          className="w-8 h-8 rounded-lg bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#111] flex items-center justify-center font-bold text-sm"
                         >
-                          <Minus className="w-3.5 h-3.5" />
+                          <Minus className="w-4 h-4" />
                         </button>
-                        <span className="w-5 text-center font-black text-sm text-[#111]">{count}</span>
+                        <span className="w-5 text-center font-black text-base text-[#111]">{count}</span>
                         <button
                           onClick={() => updateSauceCount(sauce.id, 1)}
-                          className="w-7 h-7 rounded-lg bg-mcd-yellow text-black flex items-center justify-center font-bold text-sm"
+                          className="w-8 h-8 rounded-lg bg-[#FFBC0D] text-black flex items-center justify-center font-bold text-sm"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <Plus className="w-4 h-4" />
                         </button>
                       </div>
                     </div>

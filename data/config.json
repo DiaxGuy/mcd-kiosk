@@ -122,24 +122,24 @@
     }
   ],
   "sides": [
-    { "id": "fries_med", "name": "Średnie frytki", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20261104150338/pl10-p00001662-drwal-2026-na-www-540x450px-frytki-zakrecone-z-sosem.jpg" },
-    { "id": "fries_curly", "name": "Frytki Zakręcone z sosem", "extraPrice": 3.50, "image": "https://cdn.mcdonalds.pl/uploads/20261104150338/pl10-p00001662-drwal-2026-na-www-540x450px-frytki-zakrecone-z-sosem.jpg" },
-    { "id": "side_salad", "name": "Mała sałatka z sosem", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png" },
-    { "id": "side_apples", "name": "Cząstki jabłek", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png" },
-    { "id": "side_carrots", "name": "Chrupiące marchewki", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png" }
+    { "id": "fries_med", "name": "Średnie frytki", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20241104114431/354308-nowe-frytki-2024-na-www-1090x664px-2-frytki-srednie.png" },
+    { "id": "fries_curly", "name": "Frytki Zakręcone z sosem", "extraPrice": 3.50, "image": "https://cdn.mcdonalds.pl/uploads/20261104150358/pl10-p00001662-drwal-2026-na-www-1090x664px-frytki-zakrecone-z-sosem.png" },
+    { "id": "side_salad", "name": "Mała sałatka z sosem", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20221109151151/salatka-2021-singlepag-e.png" },
+    { "id": "side_apples", "name": "Cząstki jabłek", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20221011185937/350463-mcspicy-na-www-1090x664px-3.png" },
+    { "id": "side_carrots", "name": "Chrupiące marchewki", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20221011185803/350463-mcspicy-na-www-1090x664px-2.png" }
   ],
   "drinks": [
-    { "id": "cola", "name": "Coca-Cola®", "extraPrice": 0 },
-    { "id": "cola_zero", "name": "Coca-Cola® Zero Cukru", "extraPrice": 0 },
-    { "id": "fanta", "name": "Fanta®", "extraPrice": 0 },
-    { "id": "sprite", "name": "Sprite®", "extraPrice": 0 },
-    { "id": "lipton", "name": "Lipton® Ice Tea Cytryna", "extraPrice": 0 },
-    { "id": "water_still", "name": "Woda Kropla Beskidu (niegazowana)", "extraPrice": 0 },
-    { "id": "water_sparkling", "name": "Woda Kropla Delice (gazowana)", "extraPrice": 0 },
-    { "id": "juice_orange", "name": "Sok Pomarańczowy Cappy®", "extraPrice": 1.50 },
-    { "id": "juice_apple", "name": "Sok Jabłkowy Cappy®", "extraPrice": 1.50 },
-    { "id": "coffee_black", "name": "Kawa Czarna", "extraPrice": 2.00 },
-    { "id": "coffee_milk", "name": "Kawa z Mlekiem", "extraPrice": 2.00 }
+    { "id": "cola", "name": "Coca-Cola®", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png" },
+    { "id": "cola_zero", "name": "Coca-Cola® Zero Cukru", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png" },
+    { "id": "fanta", "name": "Fanta®", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png" },
+    { "id": "sprite", "name": "Sprite®", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png" },
+    { "id": "lipton", "name": "Lipton® Ice Tea Cytryna", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20230919154152/1090x664kubek.png" },
+    { "id": "water_still", "name": "Woda Kropla Beskidu (niegazowana)", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20250902100753/356990-kubki-z-woda-na-www-1090x664px-woda-bez-lodu-0-5-l.png" },
+    { "id": "water_sparkling", "name": "Woda Kropla Delice (gazowana)", "extraPrice": 0, "image": "https://cdn.mcdonalds.pl/uploads/20250902100753/356990-kubki-z-woda-na-www-1090x664px-woda-bez-lodu-0-5-l.png" },
+    { "id": "juice_orange", "name": "Sok Pomarańczowy Cappy®", "extraPrice": 1.50, "image": "https://cdn.mcdonalds.pl/uploads/20230727135907/351444-kubki-soczki-na-www-1090x664px-1-sok-pomaranczowy-1.png" },
+    { "id": "juice_apple", "name": "Sok Jabłkowy Cappy®", "extraPrice": 1.50, "image": "https://cdn.mcdonalds.pl/uploads/20230727135744/opt/351444-kubki-soczki-na-www-1090x664px-2-sok-jablkowy-1.png" },
+    { "id": "coffee_black", "name": "Kawa Czarna", "extraPrice": 2.00, "image": "https://cdn.mcdonalds.pl/uploads/20240318122115/353846-nowe-kubki-mccafe-2024-na-www-1090x664px-kawa-czarna.png" },
+    { "id": "coffee_milk", "name": "Kawa z Mlekiem", "extraPrice": 2.00, "image": "https://cdn.mcdonalds.pl/uploads/20240318122156/353846-nowe-kubki-mccafe-2024-na-www-1090x664px-kawa-z-mlekiem.png" }
   ],
   "ingredients": [
     { "id": "extra_patty", "name": "Dodatkowa wołowina 100%", "type": "add", "price": 7.00 },
@@ -154,15 +154,15 @@
     { "id": "no_lettuce", "name": "Bez sałaty", "type": "remove", "price": 0 }
   ],
   "sauces": [
-    { "id": "sauce_sweet_sour", "name": "Sos Słodko-kwaśny", "price": 2.50 },
-    { "id": "sauce_garlic", "name": "Sos Czosnkowy", "price": 2.50 },
-    { "id": "sauce_bbq", "name": "Sos Barbecue", "price": 2.50 },
-    { "id": "sauce_mayo_sriracha", "name": "Sos Mayo Sriracha", "price": 2.50 },
-    { "id": "sauce_blue_cheese", "name": "Sos Blue Cheese", "price": 2.50 },
-    { "id": "sauce_sour_cream", "name": "Sos Śmietanowy", "price": 2.50 },
-    { "id": "sauce_honey_mustard", "name": "Sos Miodowo-Musztardowy", "price": 2.50 },
-    { "id": "sauce_ketchup", "name": "Ketchup", "price": 2.50 },
-    { "id": "sauce_cranberry", "name": "Dip Żurawinowy", "price": 2.50 }
+    { "id": "sauce_sweet_sour", "name": "Sos Słodko-kwaśny", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20191017165922/opt/07-09-sos-slodko-kwasny-singlepage.png" },
+    { "id": "sauce_garlic", "name": "Sos Czosnkowy", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20210803092602/opt/347517-wrap-tzatziki-na-www-1090x664px-6.png" },
+    { "id": "sauce_bbq", "name": "Sos Barbecue", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20191017165753/opt/07-08-sos-barbecue-singlepage.png" },
+    { "id": "sauce_mayo_sriracha", "name": "Sos Mayo Sriracha", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20230711135003/352209-spicy-chicken-box-na-www-1090x664px-6-sos-sriracha-mayo.png" },
+    { "id": "sauce_blue_cheese", "name": "Sos Blue Cheese", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20261002145516/pl10-p00001578-mccrispy-q4-halloween-na-www-1090x664px-4-sos-blue-cheese.png" },
+    { "id": "sauce_sour_cream", "name": "Sos Śmietanowy", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20191017170121/opt/07-11-sos-smietanowy-singlepage.png" },
+    { "id": "sauce_honey_mustard", "name": "Sos Miodowo-Musztardowy", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20260505130700/pl10-p00001111-mcd-mccrispy-strips-na-www-1090x664px-sos-honey-mustard.png" },
+    { "id": "sauce_ketchup", "name": "Ketchup", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20191017170641/opt/07-15-ketchup-singlepage.png" },
+    { "id": "sauce_cranberry", "name": "Dip Żurawinowy", "price": 2.50, "image": "https://cdn.mcdonalds.pl/uploads/20261104154113/pl10-p00001662-drwal-2026-na-www-1090x664px-dip-zurawinowy.png" }
   ],
   "upsellItems": [
     {

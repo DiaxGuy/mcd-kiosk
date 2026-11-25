@@ -62,7 +62,7 @@ export const CartTray: React.FC<CartTrayProps> = ({
       </div>
 
       {/* Cart Items List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin bg-[#FAFAFA]">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin bg-white">
         {items.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[#9CA3AF]">
             <div className="w-16 h-16 rounded-full bg-[#F3F4F6] flex items-center justify-center text-[#9CA3AF] mb-3 border border-[#E5E7EB]">
@@ -75,7 +75,7 @@ export const CartTray: React.FC<CartTrayProps> = ({
           items.map((item) => (
             <div
               key={item.cartId}
-              className="bg-white border border-[#E5E7EB] rounded-2xl p-3.5 flex flex-col space-y-2.5 transition-all shadow-sm"
+              className="bg-white border border-[#E5E7EB] rounded-xl p-3.5 flex flex-col space-y-2.5 transition-colors"
             >
               {/* Item Top: Name, Image, Price */}
               <div className="flex items-start justify-between gap-2">

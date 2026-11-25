@@ -44,6 +44,7 @@ export interface DrinkChoice {
   id: string;
   name: string;
   extraPrice: number;
+  image?: string;
 }
 
 export interface CustomIngredient {
@@ -57,6 +58,7 @@ export interface SauceChoice {
   id: string;
   name: string;
   price: number;
+  image?: string;
 }
 
 export interface UpsellItem {

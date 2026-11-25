@@ -527,10 +527,10 @@ export const App: React.FC = () => {
           language={language}
         />
 
-        {/* Center Column: Product Grid */}
-        <main className="flex-1 flex flex-col h-full overflow-hidden bg-[#F4F4F6]">
+        {/* Center Column: Product Grid (Snow White EOTF Canvas) */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden bg-white">
           {/* Subheader: Category Sub-filters (Horizontal pills as in photo) & Search */}
-          <div className="h-14 px-8 border-b border-[#E5E7EB] flex items-center justify-between shrink-0 bg-white shadow-sm">
+          <div className="h-14 px-6 border-b border-[#E5E7EB] flex items-center justify-between shrink-0 bg-white">
             {/* Filter Pills (All, Burger, Chicken, Vege...) */}
             <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none py-1">
               {subFilters.map((pill) => {
@@ -542,9 +542,9 @@ export const App: React.FC = () => {
                       sound.playTap();
                       setActiveSubFilter(pill.id);
                     }}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
                       isActive
-                        ? 'bg-[#111111] text-white shadow-sm'
+                        ? 'bg-[#111111] text-white'
                         : 'bg-[#F3F4F6] text-[#4B5563] hover:bg-[#E5E7EB]'
                     }`}
                   >
@@ -555,14 +555,14 @@ export const App: React.FC = () => {
             </div>
 
             {/* Search Input Bar */}
-            <div className="relative w-64 lg:w-72">
+            <div className="relative w-60 lg:w-72">
               <Search className="w-4 h-4 text-[#9CA3AF] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Szukaj w menu..."
-                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] focus:border-mcd-yellow rounded-full py-1.5 pl-10 pr-4 text-xs font-semibold text-[#111] placeholder-[#9CA3AF] outline-none transition-colors"
+                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] focus:border-[#FFBC0D] rounded-full py-1.5 pl-10 pr-4 text-xs font-semibold text-[#111] placeholder-[#9CA3AF] outline-none transition-colors"
               />
               {searchQuery && (
                 <button
@@ -576,26 +576,31 @@ export const App: React.FC = () => {
           </div>
 
           {/* Product Cards Grid & Promo Banner */}
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
-            {/* Top Promotional Banner (as seen in photo) */}
-            <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#E0F2FE] via-[#F0FDF4] to-[#FEF3C7] border border-[#BAE6FD] p-5 flex items-center justify-between shadow-sm relative overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin bg-white">
+            {/* Top Promotional Banner (Flat clean official banner as on kiosk photo) */}
+            <div className="mb-5 rounded-xl bg-[#F3F7FA] border border-[#E5E7EB] px-6 py-4 flex items-center justify-between relative overflow-hidden">
               <div className="space-y-1 z-10 max-w-md">
-                <span className="text-[11px] font-black uppercase tracking-wider text-mcd-red bg-white/80 px-2.5 py-0.5 rounded-full inline-block">
-                  Zimowa propozycja
+                <span className="text-[10px] font-black uppercase tracking-wider text-white bg-[#DB0007] px-2 py-0.5 rounded-sm inline-block">
+                  Zima 2026
                 </span>
                 <h3 className="text-xl lg:text-2xl font-black text-[#111111] leading-tight">
-                  Chrupiący, złocisty & kultowy
+                  Chrupiący, złocisty &amp; kultowy
                 </h3>
-                <p className="text-xs text-[#4B5563] font-medium">
-                  Dotknij, aby zamówić Burgera Drwala lub chrupiące McNuggets z sosem!
+                <p className="text-xs text-[#4B5563] font-semibold">
+                  Dotknij, aby zamówić Burgera Drwala lub chrupiące McNuggets® z sosem
                 </p>
               </div>
 
-              <div className="h-20 lg:h-24 flex items-center z-10 shrink-0">
+              <div className="h-20 lg:h-24 flex items-center gap-2 z-10 shrink-0">
+                <img
+                  src="https://cdn.mcdonalds.pl/uploads/20210609095435/347406-supreme-crispy-chicken-strips-i-chicken-box-na-www-1090x664px-3.png"
+                  alt="McNuggets"
+                  className="h-16 lg:h-20 object-contain hidden sm:block"
+                />
                 <img
                   src="https://cdn.mcdonalds.pl/uploads/20261104143818/pl10-p00001662-drwal-2026-na-www-1090x664px-burger-drwala-klasyczny.png"
                   alt="Promo Drwal"
-                  className="h-full object-contain filter drop-shadow-md"
+                  className="h-full object-contain"
                 />
               </div>
             </div>
@@ -628,43 +633,42 @@ export const App: React.FC = () => {
           </div>
 
           {/* Official Bottom Bar (Matches the bottom bar on the photo!) */}
-          <div className="h-20 bg-white border-t border-[#E5E7EB] px-6 flex items-center justify-between shrink-0 shadow-kiosk-bottom z-10">
-            {/* Left: Yellow "MyMcDonald's Rewards" block (interactive!) */}
+          <div className="h-20 bg-white border-t border-[#E5E7EB] px-6 flex items-center justify-between shrink-0 z-10">
+            {/* Left: Yellow "MojeM" Login/Coupon Tile (as on photo) */}
             <button
               onClick={() => {
                 sound.playTap();
                 setShowCoupons(true);
               }}
-              className="flex items-center space-x-3 bg-mcd-yellow rounded-2xl px-4 py-2.5 shadow-sm text-black cursor-pointer hover:brightness-105 transition-all active:scale-95"
+              className="flex items-center space-x-3 bg-[#FFBC0D] hover:bg-[#F5B300] rounded-lg px-4 py-2.5 text-black cursor-pointer transition-colors active:scale-95"
             >
               <Smartphone className="w-6 h-6 shrink-0" />
               <div className="text-left leading-tight">
                 <span className="text-[10px] font-black uppercase tracking-wider block">
-                  {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'MojeM Rewards'}
+                  {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'MojeM'}
                 </span>
                 <span className="text-xs font-extrabold block">
-                  {appliedCoupon ? `-${appliedCoupon.discountAmount.toFixed(2).replace('.', ',')} zł rabatu` : 'Skanuj i zbieraj punkty'}
+                  {appliedCoupon ? `-${appliedCoupon.discountAmount.toFixed(2).replace('.', ',')} zł` : 'Zaloguj / Kupony'}
                 </span>
               </div>
             </button>
 
-            {/* Center: Order summary button / price */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-[#111]">
-                <ShoppingBag className="w-5 h-5 text-mcd-yellow" />
-                <span className="text-xs font-bold text-[#6B7280]">Razem:</span>
-                <span className="text-xl font-black text-[#111]">
-                  {cartTotalAmount.toFixed(2).replace('.', ',')} zł
-                </span>
+            {/* Center: Takeaway Bag with Red Counter Badge + Total Amount (as on photo) */}
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <ShoppingBag className="w-7 h-7 text-[#92400E]" />
                 {cartTotalQuantity > 0 && (
-                  <span className="bg-black text-white text-xs font-black px-2 py-0.5 rounded-full ml-1">
-                    {cartTotalQuantity} szt.
+                  <span className="absolute -top-1.5 -right-2 bg-[#DB0007] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                    {cartTotalQuantity}
                   </span>
                 )}
               </div>
+              <span className="text-2xl font-black text-[#111111] tracking-tight">
+                {cartTotalAmount.toFixed(2).replace('.', ',')} zł
+              </span>
             </div>
 
-            {/* Right: Start Over + Big Yellow Checkout Button (as on photo) */}
+            {/* Right: Start Over + Flat Yellow Checkout Button (as on photo) */}
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => {
@@ -680,9 +684,9 @@ export const App: React.FC = () => {
               <button
                 onClick={handleStartCheckout}
                 disabled={cart.length === 0}
-                className={`px-8 py-3 rounded-2xl font-black text-sm flex items-center gap-2 transition-all ${
+                className={`px-8 py-3 rounded-lg font-black text-sm flex items-center gap-2 transition-colors ${
                   cart.length > 0
-                    ? 'bg-mcd-yellow hover:bg-[#EAB308] text-black shadow-sm active:scale-98'
+                    ? 'bg-[#FFBC0D] hover:bg-[#F5B300] text-[#111111] active:scale-98'
                     : 'bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed'
                 }`}
               >
