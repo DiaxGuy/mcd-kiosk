@@ -48,7 +48,7 @@ let currentOrderNumber = 41;
 const orders = [];
 const pendingSessions = new Map();
 
-function createOrderRecord({ items, orderType, paymentMethod, totalAmount, paymentIntentId }) {
+function createOrderRecord({ items, orderType, tableNumber, appliedCoupon, paymentMethod, totalAmount, paymentIntentId }) {
   currentOrderNumber = (currentOrderNumber % 99) + 1;
   const orderNumberStr = String(currentOrderNumber).padStart(2, '0');
   const receiptNumber = 'PAR/' + Math.floor(100000 + Math.random() * 900000) + '/' + new Date().getFullYear();
@@ -57,6 +57,9 @@ function createOrderRecord({ items, orderType, paymentMethod, totalAmount, payme
     orderNumber: orderNumberStr,
     receiptNumber,
     orderType: orderType || 'dine_in',
+    tableNumber: tableNumber || null,
+    kitchenStatus: 'preparing',
+    appliedCoupon: appliedCoupon || null,
     items,
     totalAmount: Number(totalAmount || 0),
     paymentMethod: paymentMethod || 'stripe',
@@ -69,7 +72,7 @@ function createOrderRecord({ items, orderType, paymentMethod, totalAmount, payme
   orders.unshift(newOrder);
   if (orders.length > 200) orders.pop();
 
-  console.log(`[ORDER CREATED] #${orderNumberStr} - ${newOrder.orderType} - ${newOrder.totalAmount} PLN via ${newOrder.paymentMethod}`);
+  console.log(`[ORDER CREATED] #${orderNumberStr} - ${newOrder.orderType}${newOrder.tableNumber ? ` (Stolik #${newOrder.tableNumber})` : ''} - ${newOrder.totalAmount} PLN via ${newOrder.paymentMethod}`);
   return newOrder;
 }
 
@@ -126,7 +129,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
 // Create Stripe Checkout Session (Hosted Stripe Page Redirect)
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
-    const { items, orderType = 'dine_in' } = req.body;
+    const { items, orderType = 'dine_in', tableNumber = null, appliedCoupon = null } = req.body;
     if (!items || !items.length) {
       return res.status(400).json({ error: 'Koszyk jest pusty' });
     }
@@ -135,9 +138,14 @@ app.post('/api/create-checkout-session', async (req, res) => {
     const host = req.headers['x-forwarded-host'] || req.get('host');
     const baseUrl = req.headers.origin || `${proto}://${host}`;
 
+    const rawTotal = items.reduce((sum, i) => sum + Number(i.totalPrice || 0), 0);
+    const discountAmount = Math.min(rawTotal, Number(appliedCoupon?.discountAmount || 0));
+    const finalTotal = Math.max(1, rawTotal - discountAmount);
+    const discountRatio = rawTotal > 0 ? finalTotal / rawTotal : 1;
+
     const lineItems = items.map((item) => {
       const qty = Math.max(1, Number(item.quantity || 1));
-      const unitPln = Number(item.unitPrice ?? (Number(item.totalPrice || 0) / qty));
+      const unitPln = Number(item.unitPrice ?? (Number(item.totalPrice || 0) / qty)) * discountRatio;
       const unitAmount = Math.max(100, Math.round(unitPln * 100));
       const baseName = item.menuItem?.name || item.name || "Produkt McDonald's";
       const sizeLabel =
@@ -161,8 +169,6 @@ app.post('/api/create-checkout-session', async (req, res) => {
       };
     });
 
-    const totalAmount = items.reduce((sum, i) => sum + Number(i.totalPrice || 0), 0);
-
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -172,13 +178,17 @@ app.post('/api/create-checkout-session', async (req, res) => {
       metadata: {
         kioskId: 'K-04',
         orderType,
+        tableNumber: tableNumber || '',
+        couponCode: appliedCoupon?.code || '',
       },
     });
 
     pendingSessions.set(session.id, {
       items,
       orderType,
-      totalAmount,
+      tableNumber,
+      appliedCoupon,
+      totalAmount: Number(finalTotal.toFixed(2)),
       createdAt: Date.now(),
     });
 
@@ -226,6 +236,8 @@ app.get('/api/checkout-session/:sessionId', async (req, res) => {
       },
     ];
     const orderType = pending?.orderType || session.metadata?.orderType || 'dine_in';
+    const tableNumber = pending?.tableNumber || (session.metadata?.tableNumber ? session.metadata.tableNumber : null);
+    const appliedCoupon = pending?.appliedCoupon || null;
     const totalAmount = pending?.totalAmount ?? (session.amount_total || 0) / 100;
 
     pendingSessions.delete(sessionId);
@@ -233,6 +245,8 @@ app.get('/api/checkout-session/:sessionId', async (req, res) => {
     const newOrder = createOrderRecord({
       items,
       orderType,
+      tableNumber,
+      appliedCoupon,
       paymentMethod: 'stripe',
       totalAmount,
       paymentIntentId,
@@ -261,7 +275,7 @@ app.get('/api/menu', (req, res) => {
 
 // Create Order API
 app.post('/api/orders', (req, res) => {
-  const { items, orderType, paymentMethod, totalAmount, paymentIntentId } = req.body;
+  const { items, orderType, tableNumber, appliedCoupon, paymentMethod, totalAmount, paymentIntentId } = req.body;
 
   if (!items || !items.length) {
     return res.status(400).json({ error: 'Order must contain items' });
@@ -270,11 +284,24 @@ app.post('/api/orders', (req, res) => {
   const newOrder = createOrderRecord({
     items,
     orderType,
+    tableNumber,
+    appliedCoupon,
     paymentMethod,
     totalAmount,
     paymentIntentId,
   });
   res.status(201).json(newOrder);
+});
+
+// Update kitchen status for Order Board (/ekran)
+app.patch('/api/orders/:orderNumber/status', (req, res) => {
+  const { kitchenStatus } = req.body;
+  const order = orders.find(o => o.orderNumber === req.params.orderNumber);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (['preparing', 'ready', 'completed'].includes(kitchenStatus)) {
+    order.kitchenStatus = kitchenStatus;
+  }
+  res.json(order);
 });
 
 // List orders

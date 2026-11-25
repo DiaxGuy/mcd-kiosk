@@ -15,6 +15,7 @@ import { sound } from '../utils/audio';
 
 interface CustomizationModalProps {
   item: MenuItem;
+  editingCartItem?: CartItem | null;
   mealSizes: MealSizeOption[];
   availableSides: SideChoice[];
   availableDrinks: DrinkChoice[];
@@ -27,6 +28,7 @@ interface CustomizationModalProps {
 
 export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   item,
+  editingCartItem,
   mealSizes,
   availableSides,
   availableDrinks,
@@ -39,15 +41,34 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   const t = translations[language];
 
   const [selectedMealSize, setSelectedMealSize] = useState<'single' | 'medium' | 'large'>(
-    item.isCustomizable ? 'medium' : 'single'
+    editingCartItem ? editingCartItem.mealSize : item.isCustomizable ? 'medium' : 'single'
   );
-  const [selectedSide, setSelectedSide] = useState<SideChoice>(availableSides[0]);
-  const [selectedDrink, setSelectedDrink] = useState<DrinkChoice>(availableDrinks[0]);
-  const [selectedIngredients, setSelectedIngredients] = useState<CustomIngredient[]>([]);
-  const [selectedSauces, setSelectedSauces] = useState<{ [sauceId: string]: number }>({});
+  const [selectedSide, setSelectedSide] = useState<SideChoice>(
+    editingCartItem?.selectedSide || availableSides[0]
+  );
+  const [selectedDrink, setSelectedDrink] = useState<DrinkChoice>(
+    editingCartItem?.selectedDrink || availableDrinks[0]
+  );
+  const [selectedIngredients, setSelectedIngredients] = useState<CustomIngredient[]>(
+    editingCartItem?.customIngredients || []
+  );
+  const [selectedSauces, setSelectedSauces] = useState<{ [sauceId: string]: number }>(() => {
+    if (!editingCartItem) return {};
+    const map: { [id: string]: number } = {};
+    editingCartItem.selectedSauces.forEach(({ sauce, quantity }) => {
+      map[sauce.id] = quantity;
+    });
+    return map;
+  });
   const [activeTab, setActiveTab] = useState<'meal' | 'ingredients' | 'side' | 'drink' | 'sauces'>(
     item.isCustomizable ? 'meal' : item.isBoxOrNuggets ? 'sauces' : 'ingredients'
   );
+
+  // Free sauce allowance: 2 free for Chicken Box/Nuggets, 1 free for McZestaw
+  const freeSauceQuota = item.isBoxOrNuggets ? 2 : selectedMealSize !== 'single' ? 1 : 0;
+  const totalSelectedSauces = Object.values(selectedSauces).reduce((s, q) => s + q, 0);
+  const paidSaucesCount = Math.max(0, totalSelectedSauces - freeSauceQuota);
+  const extraSaucePrice = paidSaucesCount * (availableSauces[0]?.price || 2.5);
 
   const mealSizeOption = mealSizes.find((m) => m.id === selectedMealSize);
   const mealDelta = selectedMealSize !== 'single' && mealSizeOption ? mealSizeOption.priceDelta : 0;
@@ -55,7 +76,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   const drinkExtra = selectedMealSize !== 'single' ? selectedDrink.extraPrice : 0;
   const ingredientsPrice = selectedIngredients.reduce((sum, ing) => sum + ing.price, 0);
 
-  const unitPrice = item.price + mealDelta + sideExtra + drinkExtra + ingredientsPrice;
+  const unitPrice = item.price + mealDelta + sideExtra + drinkExtra + ingredientsPrice + extraSaucePrice;
 
   const toggleIngredient = (ing: CustomIngredient) => {
     sound.playTap();
@@ -85,17 +106,18 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
       }))
       .filter((s) => s.sauce);
 
+    const qty = editingCartItem?.quantity || 1;
     const cartItem: CartItem = {
-      cartId: `${item.id}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      cartId: editingCartItem?.cartId || `${item.id}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
       menuItem: item,
-      quantity: 1,
+      quantity: qty,
       mealSize: selectedMealSize,
       selectedSide: selectedMealSize !== 'single' ? selectedSide : undefined,
       selectedDrink: selectedMealSize !== 'single' ? selectedDrink : undefined,
       customIngredients: selectedIngredients,
       selectedSauces: sauceList,
       unitPrice,
-      totalPrice: unitPrice,
+      totalPrice: unitPrice * qty,
     };
 
     onAddToCart(cartItem);
@@ -423,7 +445,14 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           {/* TAB 5: SAUCES */}
           {activeTab === 'sauces' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-black text-[#111]">{t.chooseSauces}</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-lg font-black text-[#111]">{t.chooseSauces}</h3>
+                {freeSauceQuota > 0 && (
+                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+                    Darmowe sosy w zestawie: {Math.min(totalSelectedSauces, freeSauceQuota)} / {freeSauceQuota}
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {availableSauces.map((sauce) => {
                   const count = selectedSauces[sauce.id] || 0;
@@ -483,7 +512,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               onClick={handleConfirm}
               className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-base flex items-center gap-2 shadow-sm transition-all active:scale-98"
             >
-              <span>{t.addToOrder}</span>
+              <span>{editingCartItem ? 'Zapisz zmiany' : t.addToOrder}</span>
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>

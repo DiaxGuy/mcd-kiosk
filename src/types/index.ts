@@ -80,9 +80,19 @@ export interface CartItem {
   totalPrice: number;
 }
 
+export interface AppliedCoupon {
+  code: string;
+  title: string;
+  discountAmount: number;
+  pointsEarned?: number;
+}
+
 export interface Order {
   orderNumber: string;
   orderType: OrderType;
+  tableNumber?: string | null;
+  kitchenStatus?: 'preparing' | 'ready' | 'completed';
+  appliedCoupon?: AppliedCoupon | null;
   items: CartItem[];
   totalAmount: number;
   paymentMethod: PaymentMethod;

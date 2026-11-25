@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, SlidersHorizontal, Flame } from 'lucide-react';
+import { Plus, SlidersHorizontal, Flame, Info } from 'lucide-react';
 import { MenuItem, Language } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
@@ -7,12 +7,14 @@ import { sound } from '../utils/audio';
 interface ProductCardProps {
   item: MenuItem;
   onSelect: (item: MenuItem) => void;
+  onShowNutrition?: (item: MenuItem) => void;
   language: Language;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   item,
   onSelect,
+  onShowNutrition,
   language,
 }) => {
   const t = translations[language];
@@ -27,7 +29,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       onClick={handleClick}
       className="group relative bg-white hover:bg-[#FAFAFA] border border-[#E5E7EB] hover:border-mcd-yellow rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98]"
     >
-      {/* Top: Badge (Popular / Nowość / Wege) */}
+      {/* Top: Badge (Popular / Nowość / Wege) + Nutrition Info Icon */}
       <div className="flex items-center justify-between w-full h-5 mb-1">
         {item.badge ? (
           <span
@@ -44,6 +46,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </span>
         ) : (
           <span />
+        )}
+
+        {onShowNutrition && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              sound.playTap();
+              onShowNutrition(item);
+            }}
+            className="w-6 h-6 rounded-full bg-[#F3F4F6] hover:bg-mcd-yellow text-[#6B7280] hover:text-black flex items-center justify-center transition-colors"
+            title="Wartości odżywcze i alergeny"
+          >
+            <Info className="w-3.5 h-3.5" />
+          </button>
         )}
       </div>
 

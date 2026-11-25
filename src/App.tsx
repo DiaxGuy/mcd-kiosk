@@ -13,6 +13,7 @@ import {
   Language,
   OrderType,
   PaymentMethod,
+  AppliedCoupon,
 } from './types';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -24,13 +25,23 @@ import { PaymentModal } from './components/PaymentModal';
 import { OrderConfirmationScreen } from './components/OrderConfirmationScreen';
 import { AttractScreen } from './components/AttractScreen';
 import { AddedToOrderModal } from './components/AddedToOrderModal';
+import { TableServiceModal } from './components/TableServiceModal';
+import { CouponsModal } from './components/CouponsModal';
+import { OrderBoardScreen } from './components/OrderBoardScreen';
+import { InactivityModal } from './components/InactivityModal';
+import { NutritionModal } from './components/NutritionModal';
 import { translations } from './utils/translations';
 import { sound } from './utils/audio';
 import { Search, Sparkles, QrCode, Smartphone, ShoppingBag, ArrowRight, RotateCcw, Accessibility } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Navigation & View states
-  const [view, setView] = useState<'attract' | 'menu' | 'confirmed'>('attract');
+  const initialBoard =
+    typeof window !== 'undefined' &&
+    (window.location.pathname === '/ekran' || window.location.pathname === '/board');
+  const [view, setView] = useState<'attract' | 'menu' | 'confirmed' | 'board'>(
+    initialBoard ? 'board' : 'attract'
+  );
   const [orderType, setOrderType] = useState<OrderType>('dine_in');
   const [language, setLanguage] = useState<Language>('pl');
   const [selectedCategory, setSelectedCategory] = useState<string>('co-nowego');
@@ -51,11 +62,19 @@ export const App: React.FC = () => {
   // Cart & Modal states
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
+  const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
+  const [nutritionItem, setNutritionItem] = useState<MenuItem | null>(null);
   const [showUpsell, setShowUpsell] = useState(false);
+  const [showTableService, setShowTableService] = useState(false);
+  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  const [showCoupons, setShowCoupons] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
   const [showAddedModal, setShowAddedModal] = useState(false);
+  const [accessibleMode, setAccessibleMode] = useState(false);
+  const [showInactivity, setShowInactivity] = useState(false);
 
   const t = translations[language];
 
@@ -96,6 +115,12 @@ export const App: React.FC = () => {
           if (parsed.orderType) {
             setOrderType(parsed.orderType);
           }
+          if (parsed.tableNumber) {
+            setTableNumber(parsed.tableNumber);
+          }
+          if (parsed.appliedCoupon) {
+            setAppliedCoupon(parsed.appliedCoupon);
+          }
         }
       } catch (e) {
         console.warn('Could not restore pending cart:', e);
@@ -104,6 +129,27 @@ export const App: React.FC = () => {
       setShowPayment(true);
     }
   }, []);
+
+  // Inactivity timeout: 45s without touch/pointer/keyboard while browsing menu
+  useEffect(() => {
+    if (view !== 'menu' || showPayment || showInactivity) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        setShowInactivity(true);
+      }, 45000);
+    };
+
+    resetTimer();
+    const events = ['pointerdown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach((ev) => window.addEventListener(ev, resetTimer, { passive: true }));
+    return () => {
+      clearTimeout(timer);
+      events.forEach((ev) => window.removeEventListener(ev, resetTimer));
+    };
+  }, [view, showPayment, showInactivity]);
 
   // Fetch menu from Express API
   useEffect(() => {
@@ -194,9 +240,19 @@ export const App: React.FC = () => {
 
   // Cart actions
   const handleAddToCart = (item: CartItem) => {
-    setCart((prev) => [...prev, item]);
-    setLastAddedItem(item);
-    setShowAddedModal(true);
+    if (editingCartItem) {
+      setCart((prev) => prev.map((c) => (c.cartId === item.cartId ? item : c)));
+      setEditingCartItem(null);
+    } else {
+      setCart((prev) => [...prev, item]);
+      setLastAddedItem(item);
+      setShowAddedModal(true);
+    }
+  };
+
+  const handleEditCartItem = (cartItem: CartItem) => {
+    setEditingCartItem(cartItem);
+    setCustomizingItem(cartItem.menuItem);
   };
 
   const handleUpdateQuantity = (cartId: string, delta: number) => {
@@ -250,32 +306,43 @@ export const App: React.FC = () => {
     }
   };
 
-  // Checkout flow: Cart -> Upsell -> Payment Modal -> Server order -> Confirmation
+  const proceedAfterUpsell = () => {
+    if (orderType === 'dine_in') {
+      setShowTableService(true);
+    } else {
+      setTableNumber(null);
+      setShowPayment(true);
+    }
+  };
+
+  // Checkout flow: Cart -> Upsell -> Table Service (if dine_in) -> Payment Modal -> Server order -> Confirmation
   const handleStartCheckout = () => {
     sound.playTap();
     if (cart.length === 0) return;
     if (upsellItems.length > 0) {
       setShowUpsell(true);
     } else {
-      setShowPayment(true);
+      proceedAfterUpsell();
     }
   };
 
   const handleUpsellSkip = () => {
     setShowUpsell(false);
-    setShowPayment(true);
+    proceedAfterUpsell();
   };
 
   const handleUpsellAddAndProceed = (extraItems: CartItem[]) => {
     setCart((prev) => [...prev, ...extraItems]);
     setShowUpsell(false);
-    setShowPayment(true);
+    proceedAfterUpsell();
   };
 
   const handlePaymentSuccess = async (paymentMethod: PaymentMethod, paymentIntentId?: string) => {
     setShowPayment(false);
 
-    const totalAmount = cart.reduce((sum, i) => sum + i.totalPrice, 0);
+    const rawTotal = cart.reduce((sum, i) => sum + i.totalPrice, 0);
+    const discount = appliedCoupon ? Math.min(rawTotal, appliedCoupon.discountAmount) : 0;
+    const totalAmount = Math.max(0, rawTotal - discount);
 
     try {
       const response = await fetch('/api/orders', {
@@ -284,6 +351,8 @@ export const App: React.FC = () => {
         body: JSON.stringify({
           items: cart,
           orderType,
+          tableNumber,
+          appliedCoupon,
           paymentMethod,
           paymentIntentId,
           totalAmount,
@@ -303,6 +372,8 @@ export const App: React.FC = () => {
         orderNumber: String(Math.floor(10 + Math.random() * 89)),
         receiptNumber: 'PAR/' + Math.floor(100000 + Math.random() * 900000) + '/2026',
         orderType,
+        tableNumber,
+        appliedCoupon,
         items: cart,
         totalAmount,
         paymentMethod,
@@ -319,14 +390,37 @@ export const App: React.FC = () => {
   const handleResetKiosk = () => {
     setCart([]);
     setCustomizingItem(null);
+    setEditingCartItem(null);
+    setNutritionItem(null);
     setShowUpsell(false);
+    setShowTableService(false);
+    setTableNumber(null);
+    setShowCoupons(false);
+    setAppliedCoupon(null);
     setShowPayment(false);
+    setShowInactivity(false);
+    setAccessibleMode(false);
     setCompletedOrder(null);
     setSearchQuery('');
     setSelectedCategory('co-nowego');
     setActiveSubFilter('all');
+    if (window.location.pathname !== '/') {
+      window.history.replaceState({}, '', '/');
+    }
     setView('attract');
   };
+
+  // 0. ORDER STATUS BOARD (/ekran)
+  if (view === 'board') {
+    return (
+      <OrderBoardScreen
+        onBackToKiosk={() => {
+          window.history.replaceState({}, '', '/');
+          setView('attract');
+        }}
+      />
+    );
+  }
 
   // 1. ATTRACT SCREEN (Idle)
   if (view === 'attract') {
@@ -335,6 +429,10 @@ export const App: React.FC = () => {
         onStart={(chosenOrderType) => {
           setOrderType(chosenOrderType);
           setView('menu');
+        }}
+        onOpenBoard={() => {
+          window.history.replaceState({}, '', '/ekran');
+          setView('board');
         }}
         language={language}
         setLanguage={setLanguage}
@@ -363,12 +461,36 @@ export const App: React.FC = () => {
       : currentCategoryObj.name
     : 'Burgery i Zestawy';
 
-  const cartTotalAmount = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+  const rawCartTotalAmount = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+  const couponDiscount = appliedCoupon ? Math.min(rawCartTotalAmount, appliedCoupon.discountAmount) : 0;
+  const cartTotalAmount = Math.max(0, rawCartTotalAmount - couponDiscount);
   const cartTotalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // 3. MAIN HORIZONTAL KIOSK SCREEN (Authentic McDonald's layout from photo)
+  // 3. MAIN HORIZONTAL KIOSK SCREEN (Supports Reachability Mode!)
   return (
-    <div className="w-screen h-screen bg-[#F4F4F6] text-[#1F1F1F] flex flex-col overflow-hidden select-none">
+    <div className={`w-screen h-screen flex flex-col overflow-hidden select-none transition-all duration-300 ${accessibleMode ? 'bg-[#111111]' : 'bg-[#F4F4F6]'}`}>
+      {accessibleMode && (
+        <div className="h-[34vh] flex flex-col items-center justify-center text-white px-6 text-center space-y-3 shrink-0">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-mcd-yellow text-black font-black text-xs uppercase">
+            <Accessibility className="w-4 h-4" />
+            <span>Tryb ułatwionego dostępu aktywny</span>
+          </div>
+          <p className="text-xs text-gray-400 max-w-md">
+            Interfejs został obniżony do dolnej części ekranu, aby ułatwić obsługę.
+          </p>
+          <button
+            onClick={() => {
+              sound.playTap();
+              setAccessibleMode(false);
+            }}
+            className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20"
+          >
+            Przywróć pełny ekran
+          </button>
+        </div>
+      )}
+
+      <div className={`bg-[#F4F4F6] text-[#1F1F1F] flex flex-col overflow-hidden transition-all duration-300 ${accessibleMode ? 'h-[66vh] rounded-t-3xl border-t-4 border-mcd-yellow shadow-2xl' : 'w-full h-full'}`}>
       {/* Top Header */}
       <Header
         orderType={orderType}
@@ -377,6 +499,8 @@ export const App: React.FC = () => {
         setLanguage={setLanguage}
         onReset={handleResetKiosk}
         currentCategoryTitle={currentCategoryTitle}
+        accessibleMode={accessibleMode}
+        onToggleAccessible={() => setAccessibleMode((v) => !v)}
       />
 
       {/* Main Body: Horizontal 3-Column Layout */}
@@ -485,6 +609,7 @@ export const App: React.FC = () => {
                     key={item.id}
                     item={item}
                     onSelect={handleProductSelect}
+                    onShowNutrition={setNutritionItem}
                     language={language}
                   />
                 ))}
@@ -494,14 +619,24 @@ export const App: React.FC = () => {
 
           {/* Official Bottom Bar (Matches the bottom bar on the photo!) */}
           <div className="h-20 bg-white border-t border-[#E5E7EB] px-6 flex items-center justify-between shrink-0 shadow-kiosk-bottom z-10">
-            {/* Left: Yellow "MyMcDonald's Rewards" block (as on photo) */}
-            <div className="flex items-center space-x-3 bg-mcd-yellow rounded-2xl px-4 py-2.5 shadow-sm text-black cursor-pointer hover:brightness-105 transition-all">
+            {/* Left: Yellow "MyMcDonald's Rewards" block (interactive!) */}
+            <button
+              onClick={() => {
+                sound.playTap();
+                setShowCoupons(true);
+              }}
+              className="flex items-center space-x-3 bg-mcd-yellow rounded-2xl px-4 py-2.5 shadow-sm text-black cursor-pointer hover:brightness-105 transition-all active:scale-95"
+            >
               <Smartphone className="w-6 h-6 shrink-0" />
               <div className="text-left leading-tight">
-                <span className="text-[10px] font-black uppercase tracking-wider block">MojeM Rewards</span>
-                <span className="text-xs font-extrabold block">Skanuj i zbieraj punkty</span>
+                <span className="text-[10px] font-black uppercase tracking-wider block">
+                  {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'MojeM Rewards'}
+                </span>
+                <span className="text-xs font-extrabold block">
+                  {appliedCoupon ? `-${appliedCoupon.discountAmount.toFixed(2).replace('.', ',')} zł rabatu` : 'Skanuj i zbieraj punkty'}
+                </span>
               </div>
-            </div>
+            </button>
 
             {/* Center: Order summary button / price */}
             <div className="flex items-center space-x-4">
@@ -553,10 +688,14 @@ export const App: React.FC = () => {
           items={cart}
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveFromCart}
+          onEditItem={handleEditCartItem}
           onClearCart={handleClearCart}
           onCheckout={handleStartCheckout}
+          appliedCoupon={appliedCoupon}
+          onOpenCoupons={() => setShowCoupons(true)}
           language={language}
         />
+      </div>
       </div>
 
       {/* MODALS */}
@@ -564,12 +703,16 @@ export const App: React.FC = () => {
       {customizingItem && (
         <CustomizationModal
           item={customizingItem}
+          editingCartItem={editingCartItem}
           mealSizes={mealSizes}
           availableSides={sides}
           availableDrinks={drinks}
           availableIngredients={ingredients}
           availableSauces={sauces}
-          onClose={() => setCustomizingItem(null)}
+          onClose={() => {
+            setCustomizingItem(null);
+            setEditingCartItem(null);
+          }}
           onAddToCart={handleAddToCart}
           language={language}
         />
@@ -585,11 +728,25 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* 2b. Table Service Modal (Dine-in table tent locator) */}
+      {showTableService && (
+        <TableServiceModal
+          onSelectTable={(chosenTable) => {
+            setTableNumber(chosenTable);
+            setShowTableService(false);
+            setShowPayment(true);
+          }}
+          onCancel={() => setShowTableService(false)}
+        />
+      )}
+
       {/* 3. Payment Modal */}
       {showPayment && (
         <PaymentModal
           items={cart}
           orderType={orderType}
+          tableNumber={tableNumber}
+          appliedCoupon={appliedCoupon}
           totalAmount={cartTotalAmount}
           onPaymentSuccess={handlePaymentSuccess}
           onCancel={() => setShowPayment(false)}
@@ -609,6 +766,32 @@ export const App: React.FC = () => {
             handleStartCheckout();
           }}
           language={language}
+        />
+      )}
+
+      {/* 5. MojeM / Coupons Modal */}
+      {showCoupons && (
+        <CouponsModal
+          cartTotal={rawCartTotalAmount}
+          appliedCoupon={appliedCoupon}
+          onApplyCoupon={setAppliedCoupon}
+          onClose={() => setShowCoupons(false)}
+        />
+      )}
+
+      {/* 6. Nutrition & Allergens Modal */}
+      {nutritionItem && (
+        <NutritionModal
+          item={nutritionItem}
+          onClose={() => setNutritionItem(null)}
+        />
+      )}
+
+      {/* 7. Inactivity Timeout Modal */}
+      {showInactivity && (
+        <InactivityModal
+          onContinue={() => setShowInactivity(false)}
+          onTimeoutReset={handleResetKiosk}
         />
       )}
     </div>

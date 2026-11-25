@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CreditCard, Banknote, X, CheckCircle, ArrowRight, AlertCircle, ExternalLink } from 'lucide-react';
-import { PaymentMethod, Language, CartItem, OrderType } from '../types';
+import { PaymentMethod, Language, CartItem, OrderType, AppliedCoupon } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
 import { OfficialLogo } from './OfficialLogo';
@@ -8,6 +8,8 @@ import { OfficialLogo } from './OfficialLogo';
 interface PaymentModalProps {
   items: CartItem[];
   orderType: OrderType;
+  tableNumber?: string | null;
+  appliedCoupon?: AppliedCoupon | null;
   totalAmount: number;
   onPaymentSuccess: (method: PaymentMethod, paymentIntentId?: string) => void;
   onCancel: () => void;
@@ -17,6 +19,8 @@ interface PaymentModalProps {
 export const PaymentModal: React.FC<PaymentModalProps> = ({
   items,
   orderType,
+  tableNumber = null,
+  appliedCoupon = null,
   totalAmount,
   onPaymentSuccess,
   onCancel,
@@ -43,7 +47,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     try {
       sessionStorage.setItem(
         'mcd_pending_checkout',
-        JSON.stringify({ cart: items, orderType })
+        JSON.stringify({ cart: items, orderType, tableNumber, appliedCoupon })
       );
 
       const res = await fetch('/api/create-checkout-session', {
@@ -52,6 +56,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         body: JSON.stringify({
           items,
           orderType,
+          tableNumber,
+          appliedCoupon,
         }),
       });
 

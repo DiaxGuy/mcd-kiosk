@@ -12,6 +12,8 @@ interface HeaderProps {
   setLanguage: (lang: Language) => void;
   onReset: () => void;
   currentCategoryTitle: string;
+  accessibleMode: boolean;
+  onToggleAccessible: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,10 +23,11 @@ export const Header: React.FC<HeaderProps> = ({
   setLanguage,
   onReset,
   currentCategoryTitle,
+  accessibleMode,
+  onToggleAccessible,
 }) => {
   const t = translations[language];
   const [time, setTime] = useState('');
-  const [accessibleMode, setAccessibleMode] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -43,8 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const toggleAccessible = () => {
     sound.playTap();
-    setAccessibleMode(!accessibleMode);
-    document.documentElement.classList.toggle('kiosk-accessible');
+    onToggleAccessible();
   };
 
   return (

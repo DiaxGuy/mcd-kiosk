@@ -1,6 +1,6 @@
 import React from 'react';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
-import { CartItem, Language } from '../types';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Pencil, Tag } from 'lucide-react';
+import { CartItem, Language, AppliedCoupon } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
 
@@ -8,8 +8,11 @@ interface CartTrayProps {
   items: CartItem[];
   onUpdateQuantity: (cartId: string, delta: number) => void;
   onRemoveItem: (cartId: string) => void;
+  onEditItem?: (item: CartItem) => void;
   onClearCart: () => void;
   onCheckout: () => void;
+  appliedCoupon?: AppliedCoupon | null;
+  onOpenCoupons?: () => void;
   language: Language;
 }
 
@@ -17,13 +20,18 @@ export const CartTray: React.FC<CartTrayProps> = ({
   items,
   onUpdateQuantity,
   onRemoveItem,
+  onEditItem,
   onClearCart,
   onCheckout,
+  appliedCoupon,
+  onOpenCoupons,
   language,
 }) => {
   const t = translations[language];
 
-  const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const rawTotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const discountAmount = appliedCoupon ? Math.min(rawTotal, appliedCoupon.discountAmount) : 0;
+  const totalAmount = Math.max(0, rawTotal - discountAmount);
   const totalItemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -129,18 +137,33 @@ export const CartTray: React.FC<CartTrayProps> = ({
                 ))}
               </div>
 
-              {/* Bottom: Quantity Controls & Delete */}
+              {/* Bottom: Quantity Controls, Edit & Delete */}
               <div className="flex items-center justify-between pt-1">
-                <button
-                  onClick={() => {
-                    sound.playTap();
-                    onRemoveItem(item.cartId);
-                  }}
-                  className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-mcd-red hover:bg-[#F3F4F6] transition-colors"
-                  title="Usuń pozycję"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center space-x-1">
+                  <button
+                    onClick={() => {
+                      sound.playTap();
+                      onRemoveItem(item.cartId);
+                    }}
+                    className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-mcd-red hover:bg-[#F3F4F6] transition-colors"
+                    title="Usuń pozycję"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  {onEditItem && (
+                    <button
+                      onClick={() => {
+                        sound.playTap();
+                        onEditItem(item);
+                      }}
+                      className="px-2 py-1 rounded-lg text-[#4B5563] hover:text-black hover:bg-[#F3F4F6] text-[11px] font-bold flex items-center gap-1 transition-colors"
+                      title="Edytuj pozycję"
+                    >
+                      <Pencil className="w-3 h-3" />
+                      <span>Edytuj</span>
+                    </button>
+                  )}
+                </div>
 
                 <div className="flex items-center space-x-2 bg-[#F3F4F6] rounded-xl p-1 border border-[#E5E7EB]">
                   <button
@@ -174,6 +197,38 @@ export const CartTray: React.FC<CartTrayProps> = ({
       {/* Footer / Checkout */}
       {items.length > 0 && (
         <div className="p-4 bg-white border-t border-[#E5E7EB] space-y-3 shrink-0 shadow-sm">
+          {/* Coupon / MojeM Summary */}
+          {appliedCoupon ? (
+            <button
+              onClick={() => {
+                sound.playTap();
+                onOpenCoupons?.();
+              }}
+              className="w-full px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs"
+            >
+              <span className="font-bold text-emerald-800 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5" />
+                <span>Kupon {appliedCoupon.code}</span>
+              </span>
+              <span className="font-black text-emerald-700">
+                -{discountAmount.toFixed(2).replace('.', ',')} zł
+              </span>
+            </button>
+          ) : (
+            onOpenCoupons && (
+              <button
+                onClick={() => {
+                  sound.playTap();
+                  onOpenCoupons();
+                }}
+                className="w-full px-3 py-1.5 rounded-xl bg-[#FFFBEB] hover:bg-mcd-yellow/20 border border-mcd-yellow/40 text-xs font-bold text-[#92400E] flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Tag className="w-3.5 h-3.5" />
+                <span>Masz kod lub kupon MojeM?</span>
+              </button>
+            )
+          )}
+
           <div className="flex items-baseline justify-between">
             <div>
               <span className="text-xs uppercase font-extrabold text-[#6B7280] block">{t.total}</span>

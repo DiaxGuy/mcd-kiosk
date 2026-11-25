@@ -94,6 +94,12 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
             <div className="text-7xl lg:text-9xl font-black text-[#111] tracking-tighter leading-none py-2 drop-shadow-sm">
               #{order.orderNumber}
             </div>
+            {order.tableNumber && (
+              <div className="mt-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-mcd-yellow text-black font-black text-sm">
+                <Utensils className="w-4 h-4" />
+                <span>Dostawa do stolika #{order.tableNumber}</span>
+              </div>
+            )}
             <div className="mt-4 pt-4 border-t border-[#F3F4F6] flex items-center justify-center gap-2 text-xs font-bold text-[#374151] uppercase tracking-wider">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>Status: Przygotowywane w kuchni</span>
@@ -137,6 +143,11 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
               <div className="mt-2 inline-block bg-black text-white px-3 py-1 font-black text-lg rounded">
                 ZAMÓWIENIE #{order.orderNumber}
               </div>
+              {order.tableNumber && (
+                <div className="mt-1 font-black text-xs text-black">
+                  OBSŁUGA STOLIKA: #{order.tableNumber}
+                </div>
+              )}
             </div>
 
             {/* Receipt Items List */}
