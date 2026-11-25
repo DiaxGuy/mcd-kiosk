@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Banknote, X, CheckCircle, ArrowRight, Smartphone, Delete, ShieldCheck } from 'lucide-react';
+import { X, Check, ArrowRight, Delete, Banknote, Smartphone } from 'lucide-react';
 import { PaymentMethod, Language } from '../types';
 import { sound } from '../utils/audio';
 import { OfficialLogo } from './OfficialLogo';
@@ -37,20 +37,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     sound.playTap();
     setStep('blik_confirming');
 
-    // Simulate bank app confirmation
     setTimeout(() => {
       sound.playSuccess();
       setStep('approved');
       setTimeout(() => {
         onPaymentSuccess('blik');
       }, 1100);
-    }, 1800);
-  };
-
-  const handleSelectCashier = () => {
-    sound.playTap();
-    setSelectedMethod('cashier');
-    setStep('cashier_confirm');
+    }, 1700);
   };
 
   const handleCashierConfirm = () => {
@@ -61,29 +54,26 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }, 1100);
   };
 
-  const formattedBlik =
-    blikCode.length > 3 ? `${blikCode.slice(0, 3)} ${blikCode.slice(3)}` : blikCode;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 select-none">
       <div className="w-full max-w-2xl bg-white border border-[#D4D4D4] rounded-xl flex flex-col overflow-hidden text-[#292929]">
-        {/* Top Header */}
-        <div className="p-5 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <OfficialLogo className="w-9 h-8" />
+        {/* Header */}
+        <div className="px-7 py-5 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
+          <div className="flex items-center space-x-3.5">
+            <OfficialLogo className="w-10 h-9" />
             <div>
               <h2 className="text-xl font-extrabold text-[#111]">
                 {step === 'choose_method'
-                  ? 'Wybierz sposób płatności'
+                  ? 'Jak chcesz zapłacić?'
                   : step === 'blik_input' || step === 'blik_confirming'
                   ? 'Płatność BLIK'
                   : step === 'approved'
-                  ? 'Płatność zakończona'
+                  ? 'Płatność przyjęta'
                   : 'Płatność przy kasie'}
               </h2>
-              <span className="text-xs text-[#6B7280]">
-                Łączna kwota do zapłaty:{' '}
-                <strong className="text-[#111] text-sm font-black">
+              <span className="text-xs text-[#6B7280] font-semibold">
+                Do zapłaty:{' '}
+                <strong className="text-[#111] font-black">
                   {totalAmount.toFixed(2).replace('.', ',')} zł
                 </strong>
               </span>
@@ -101,16 +91,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </button>
         </div>
 
-        {/* STEP 1: CHOOSE PAYMENT METHOD */}
+        {/* STEP 1: CHOOSE METHOD */}
         {step === 'choose_method' && (
-          <div className="p-8 space-y-4">
-            <div className="text-center mb-2">
-              <span className="text-xs font-bold text-[#6B7280] uppercase tracking-wider block">
-                Jak chcesz uregulować rachunek?
-              </span>
-            </div>
-
-            {/* 1. Zapłać BLIK-iem */}
+          <div className="p-8 grid grid-cols-1 sm:grid-cols-2 gap-5 bg-white">
+            {/* 1. BLIK */}
             <button
               onClick={() => {
                 sound.playTap();
@@ -118,70 +102,89 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 setBlikCode('');
                 setStep('blik_input');
               }}
-              className="group w-full p-6 rounded-2xl bg-white hover:bg-[#FFFBEB] border-2 border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
+              className="p-6 rounded-lg bg-white hover:bg-[#FFFDF5] border-2 border-[#FFBC0D] flex flex-col items-center text-center space-y-4 transition-colors"
             >
-              <div className="flex items-center space-x-5">
-                <div className="w-16 h-16 rounded-2xl bg-[#111111] text-white flex flex-col items-center justify-center font-black shadow-sm">
-                  <span className="text-base tracking-tight leading-none">BLIK</span>
-                  <span className="w-6 h-1 bg-[#E11D48] rounded-full mt-1" />
-                </div>
-                <div className="text-left">
-                  <span className="text-xl font-black text-[#111] block group-hover:text-mcd-red transition-colors">
-                    Zapłać BLIK-iem
-                  </span>
-                  <span className="text-xs text-[#6B7280] block mt-0.5 font-medium">
-                    Wpisz 6-cyfrowy kod z aplikacji bankowej
-                  </span>
-                </div>
+              <div className="w-20 h-14 rounded-md bg-[#111111] text-white flex items-center justify-center gap-1.5 font-black text-xl tracking-tight">
+                <span>BLIK</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48]" />
               </div>
-              <ArrowRight className="w-6 h-6 text-mcd-yellow group-hover:translate-x-1 transition-transform" />
+              <div>
+                <span className="text-lg font-extrabold text-[#111] block">Zapłać BLIK-iem</span>
+                <span className="text-xs text-[#6B7280] font-semibold block mt-1">
+                  Wpisz 6-cyfrowy kod z telefonu
+                </span>
+              </div>
+              <span className="mt-auto px-4 py-1.5 rounded bg-[#FFBC0D] text-[#111] text-xs font-extrabold">
+                Wybierz BLIK
+              </span>
             </button>
 
-            {/* 2. Zapłać przy kasie */}
+            {/* 2. Cashier */}
             <button
-              onClick={handleSelectCashier}
-              className="group w-full p-6 rounded-2xl bg-white hover:bg-[#F9FAFB] border-2 border-[#E5E7EB] hover:border-mcd-yellow flex items-center justify-between transition-all active:scale-98 shadow-sm"
+              onClick={() => {
+                sound.playTap();
+                setSelectedMethod('cashier');
+                setStep('cashier_confirm');
+              }}
+              className="p-6 rounded-lg bg-white hover:bg-[#FAFAFA] border-2 border-[#E5E5E5] hover:border-[#FFBC0D] flex flex-col items-center text-center space-y-4 transition-colors"
             >
-              <div className="flex items-center space-x-5">
-                <div className="w-16 h-16 rounded-2xl bg-[#F3F4F6] text-[#111] group-hover:bg-mcd-yellow group-hover:text-black flex items-center justify-center font-bold transition-colors shadow-sm">
-                  <Banknote className="w-9 h-9" />
-                </div>
-                <div className="text-left">
-                  <span className="text-xl font-black text-[#111] block group-hover:text-mcd-red transition-colors">
-                    Zapłać przy kasie
-                  </span>
-                  <span className="text-xs text-[#6B7280] block mt-0.5 font-medium">
-                    Gotówka, karta lub bony u pracownika przy ladzie odbioru
-                  </span>
-                </div>
+              <div className="w-20 h-14 rounded-md bg-[#F5F5F5] border border-[#E5E5E5] text-[#111] flex items-center justify-center">
+                <Banknote className="w-8 h-8 text-[#292929]" />
               </div>
-              <ArrowRight className="w-6 h-6 text-[#9CA3AF] group-hover:text-mcd-yellow group-hover:translate-x-1 transition-transform" />
+              <div>
+                <span className="text-lg font-extrabold text-[#111] block">Zapłać przy kasie</span>
+                <span className="text-xs text-[#6B7280] font-semibold block mt-1">
+                  Gotówka lub karta u pracownika
+                </span>
+              </div>
+              <span className="mt-auto px-4 py-1.5 rounded border border-[#D4D4D4] text-[#292929] text-xs font-extrabold">
+                Wybierz kasę
+              </span>
             </button>
           </div>
         )}
 
-        {/* STEP 2: FAKE BLIK 6-DIGIT KEYPAD */}
+        {/* STEP 2: BLIK 6-DIGIT KEYPAD (Flat Official Style) */}
         {step === 'blik_input' && (
-          <div className="p-8 flex flex-col sm:flex-row items-center gap-8 bg-[#FAFAFA]">
-            {/* Left: BLIK Code Display */}
+          <div className="p-7 flex flex-col sm:flex-row items-center gap-8 bg-white">
+            {/* Left: 6 individual digit boxes */}
             <div className="flex-1 flex flex-col items-center text-center space-y-4">
-              <div className="px-4 py-1.5 rounded-xl bg-[#111111] text-white font-black text-lg tracking-wider inline-flex items-center gap-2">
+              <div className="px-3.5 py-1.5 rounded bg-[#111111] text-white font-black text-base tracking-tight inline-flex items-center gap-1.5">
                 <span>BLIK</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-[#E11D48]" />
+                <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
               </div>
 
               <div>
-                <p className="text-sm font-extrabold text-[#111]">Wpisz 6-cyfrowy kod BLIK</p>
-                <p className="text-xs text-[#6B7280] mt-0.5">
-                  Otwórz aplikację banku i podaj dowolne 6 cyfr
-                </p>
+                <p className="text-base font-extrabold text-[#111]">Wpisz kod BLIK</p>
+                <p className="text-xs text-[#6B7280] mt-0.5">6 cyfr z Twojej aplikacji bankowej</p>
               </div>
 
-              {/* 6-digit box */}
-              <div className="w-full max-w-xs py-4 px-5 bg-white border-2 border-mcd-yellow rounded-2xl shadow-inner">
-                <span className="font-mono text-4xl font-black tracking-[0.2em] text-[#111]">
-                  {formattedBlik || '___ ___'}
-                </span>
+              <div className="flex items-center gap-2 py-2">
+                <div className="flex gap-1.5">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className={`w-10 h-12 rounded border-2 flex items-center justify-center font-black text-2xl text-[#111] ${
+                        blikCode[i] ? 'border-[#FFBC0D] bg-[#FFFDF5]' : 'border-[#D4D4D4] bg-white'
+                      }`}
+                    >
+                      {blikCode[i] || ''}
+                    </div>
+                  ))}
+                </div>
+                <span className="text-[#9CA3AF] font-bold">–</span>
+                <div className="flex gap-1.5">
+                  {[3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className={`w-10 h-12 rounded border-2 flex items-center justify-center font-black text-2xl text-[#111] ${
+                        blikCode[i] ? 'border-[#FFBC0D] bg-[#FFFDF5]' : 'border-[#D4D4D4] bg-white'
+                      }`}
+                    >
+                      {blikCode[i] || ''}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <button
@@ -192,18 +195,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 }}
                 className="text-xs font-bold text-[#6B7280] hover:text-[#111] underline"
               >
-                ← Wróć do wyboru metody płatności
+                Zmień metodę płatności
               </button>
             </div>
 
-            {/* Right: Touch Numeric Keypad */}
-            <div className="w-full max-w-xs space-y-3">
+            {/* Right: Flat Keypad */}
+            <div className="w-full max-w-[260px] space-y-2.5">
               <div className="grid grid-cols-3 gap-2">
                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
                   <button
                     key={d}
                     onClick={() => handleDigit(d)}
-                    className="h-13 py-3 rounded-2xl bg-white border border-[#E5E7EB] hover:bg-mcd-yellow text-[#111] font-black text-xl transition-all active:scale-95 shadow-sm"
+                    className="h-12 rounded border border-[#D4D4D4] bg-[#FAFAFA] hover:bg-[#FFFDF5] active:bg-[#FFBC0D] text-[#111] font-extrabold text-xl transition-colors"
                   >
                     {d}
                   </button>
@@ -213,19 +216,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     sound.playTap();
                     setBlikCode('');
                   }}
-                  className="py-3 rounded-2xl bg-red-50 hover:bg-red-100 text-mcd-red font-extrabold text-xs transition-all active:scale-95"
+                  className="h-12 rounded border border-[#D4D4D4] bg-white hover:bg-[#F5F5F5] text-[#6B7280] font-bold text-xs"
                 >
-                  WYCZYŚĆ
+                  Wyczyść
                 </button>
                 <button
                   onClick={() => handleDigit('0')}
-                  className="py-3 rounded-2xl bg-white border border-[#E5E7EB] hover:bg-mcd-yellow text-[#111] font-black text-xl transition-all active:scale-95 shadow-sm"
+                  className="h-12 rounded border border-[#D4D4D4] bg-[#FAFAFA] hover:bg-[#FFFDF5] active:bg-[#FFBC0D] text-[#111] font-extrabold text-xl transition-colors"
                 >
                   0
                 </button>
                 <button
                   onClick={handleBackspace}
-                  className="py-3 rounded-2xl bg-white border border-[#E5E7EB] hover:bg-[#E5E7EB] text-[#111] flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                  className="h-12 rounded border border-[#D4D4D4] bg-white hover:bg-[#F5F5F5] text-[#111] flex items-center justify-center"
                 >
                   <Delete className="w-5 h-5" />
                 </button>
@@ -234,87 +237,80 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               <button
                 onClick={handleBlikSubmit}
                 disabled={blikCode.length !== 6}
-                className="w-full py-4 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF] text-black font-black text-base flex items-center justify-center gap-2 shadow-md transition-all active:scale-95"
+                className="w-full py-3.5 rounded-md bg-[#FFBC0D] hover:bg-[#F5B300] disabled:bg-[#E5E5E5] disabled:text-[#9CA3AF] text-[#111] font-extrabold text-sm transition-colors"
               >
-                <ShieldCheck className="w-5 h-5" />
-                <span>Zapłać {totalAmount.toFixed(2).replace('.', ',')} zł</span>
+                Zapłać {totalAmount.toFixed(2).replace('.', ',')} zł
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 2B: BLIK BANK APP CONFIRMATION */}
+        {/* STEP 2B: BLIK PHONE CONFIRMATION */}
         {step === 'blik_confirming' && (
-          <div className="p-12 flex flex-col items-center justify-center text-center space-y-5">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-3xl bg-[#111111] text-white flex items-center justify-center shadow-lg">
-                <Smartphone className="w-10 h-10 text-mcd-yellow animate-pulse" />
-              </div>
-              <div className="w-6 h-6 rounded-full bg-[#E11D48] border-2 border-white absolute -top-1 -right-1 animate-ping" />
+          <div className="p-12 flex flex-col items-center justify-center text-center space-y-5 bg-white">
+            <div className="w-16 h-16 rounded-lg bg-[#111111] text-white flex items-center justify-center">
+              <Smartphone className="w-8 h-8 text-[#FFBC0D]" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-2xl font-black text-[#111]">Potwierdź w aplikacji bankowej</h3>
-              <p className="text-sm text-[#6B7280] max-w-sm">
-                Wysłaliśmy powiadomienie BLIK na Twój telefon (kod <strong className="font-mono text-[#111]">{formattedBlik}</strong>)...
+              <h3 className="text-xl font-extrabold text-[#111]">Potwierdź płatność na telefonie</h3>
+              <p className="text-xs text-[#6B7280] font-semibold">
+                Oczekiwanie na akceptację w aplikacji bankowej...
               </p>
             </div>
-            <div className="w-10 h-10 border-4 border-mcd-yellow border-t-transparent rounded-full animate-spin" />
+            <div className="w-9 h-9 border-4 border-[#FFBC0D] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
-        {/* STEP 3: CASHIER PAYMENT CONFIRMATION */}
+        {/* STEP 3: CASHIER */}
         {step === 'cashier_confirm' && (
-          <div className="p-8 space-y-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-mcd-yellow/20 text-black flex items-center justify-center mx-auto">
-              <Banknote className="w-8 h-8 text-mcd-yellow" />
-            </div>
-
+          <div className="p-8 space-y-6 text-center bg-white">
             <div className="space-y-1">
-              <h3 className="text-2xl font-black text-[#111]">Płatność przy kasie</h3>
-              <p className="text-sm text-[#4B5563] max-w-md mx-auto">
-                Twoje zamówienie zostanie natychmiast wysłane do kuchni. Odbierzesz paragon z numerkiem i uregulujesz należność przy odbiorze.
+              <h3 className="text-2xl font-extrabold text-[#111]">Zapłać przy kasie</h3>
+              <p className="text-sm text-[#6B7280] max-w-md mx-auto">
+                Odbierz wydruk z numerem zamówienia i zapłać pracownikowi przy odbiorze.
               </p>
             </div>
 
-            <div className="p-4 bg-[#F8F9FA] border border-[#E5E7EB] rounded-2xl inline-block max-w-sm w-full">
-              <span className="text-xs font-bold text-[#6B7280] block">Do zapłaty przy kasie:</span>
-              <span className="text-3xl font-black text-[#111] block mt-1">
+            <div className="py-4 px-6 bg-[#FAFAFA] border border-[#E5E5E5] rounded-lg inline-block">
+              <span className="text-xs font-bold text-[#6B7280] block">Kwota do zapłaty:</span>
+              <span className="text-3xl font-black text-[#111] block mt-0.5">
                 {totalAmount.toFixed(2).replace('.', ',')} zł
               </span>
             </div>
 
-            <div className="flex items-center justify-center gap-4 pt-2">
+            <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => {
                   sound.playTap();
                   setStep('choose_method');
                 }}
-                className="px-6 py-3.5 rounded-2xl bg-[#E5E7EB] hover:bg-[#D1D5DB] text-[#111] font-bold text-sm transition-colors"
+                className="px-6 py-3 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#111] font-bold text-sm"
               >
                 Wróć
               </button>
 
               <button
                 onClick={handleCashierConfirm}
-                className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-base shadow-sm transition-all transform active:scale-95"
+                className="px-8 py-3 rounded-md bg-[#FFBC0D] hover:bg-[#F5B300] text-[#111] font-extrabold text-sm flex items-center gap-2"
               >
-                Zatwierdzam i odbieram numerek
+                <span>Zatwierdzam i odbieram numerek</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 4: APPROVED SCREEN */}
+        {/* STEP 4: APPROVED */}
         {step === 'approved' && (
-          <div className="p-12 flex flex-col items-center justify-center text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center border-2 border-emerald-500 animate-bounce">
-              <CheckCircle className="w-12 h-12" />
+          <div className="p-12 flex flex-col items-center justify-center text-center space-y-4 bg-white">
+            <div className="w-16 h-16 rounded-full bg-[#008837] text-white flex items-center justify-center">
+              <Check className="w-9 h-9 stroke-[3]" />
             </div>
-            <h3 className="text-2xl font-black text-[#111]">PŁATNOŚĆ ZAAKCEPTOWANA</h3>
-            <p className="text-sm text-[#6B7280]">
+            <h3 className="text-2xl font-black text-[#111]">Płatność zaakceptowana</h3>
+            <p className="text-sm text-[#6B7280] font-semibold">
               {selectedMethod === 'blik'
-                ? 'Płatność BLIK potwierdzona! Drukujemy paragon...'
-                : 'Zamówienie wysłane! Podejdź do kasy z numerkiem.'}
+                ? 'Drukowanie numeru zamówienia...'
+                : 'Zamówienie przekazane — podejdź do kasy.'}
             </p>
           </div>
         )}

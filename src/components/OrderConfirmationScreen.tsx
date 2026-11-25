@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import confetti from 'canvas-confetti';
-import { CheckCircle2, Printer, ArrowRight, Utensils, ShoppingBag, QrCode } from 'lucide-react';
+import { Printer, ArrowRight, Utensils, ShoppingBag, QrCode, Check } from 'lucide-react';
 import { Order, Language } from '../types';
 import { translations } from '../utils/translations';
 import { sound } from '../utils/audio';
@@ -22,14 +21,6 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
 
   useEffect(() => {
     sound.playSuccess();
-    try {
-      confetti({
-        particleCount: 100,
-        spread: 80,
-        origin: { y: 0.6 },
-        colors: ['#FFBC0D', '#DB0007', '#008837', '#1F1F1F']
-      });
-    } catch {}
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -46,219 +37,178 @@ export const OrderConfirmationScreen: React.FC<OrderConfirmationScreenProps> = (
   }, []);
 
   return (
-    <div className="relative w-screen h-screen bg-[#F4F4F6] text-[#1F1F1F] flex flex-col justify-between p-8 select-none overflow-hidden animate-fadeIn">
-      {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-mcd-yellow/15 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Top Header */}
-      <div className="w-full max-w-6xl mx-auto flex items-center justify-between z-10">
+    <div className="w-screen h-screen bg-white text-[#292929] flex flex-col justify-between select-none overflow-hidden">
+      {/* Top Bar */}
+      <header className="h-16 px-8 border-b border-[#E5E5E5] flex items-center justify-between shrink-0 bg-white">
         <div className="flex items-center space-x-3">
-          <OfficialLogo className="w-12 h-11" />
-          <div>
-            <h1 className="text-2xl font-black text-[#111]">McDonald's</h1>
-            <span className="text-xs text-[#6B7280]">{order.kioskId} • {t.paymentApproved}</span>
-          </div>
+          <OfficialLogo className="w-10 h-9" />
+          <span className="text-lg font-extrabold text-[#111]">McDonald&apos;s</span>
         </div>
 
-        {/* Dining mode badge */}
-        <div className="px-5 py-2 rounded-full bg-white border border-[#E5E7EB] shadow-sm flex items-center gap-2 text-sm font-black text-[#111]">
+        <div className="px-4 py-1.5 rounded border border-[#D4D4D4] bg-[#FAFAFA] flex items-center gap-2 text-xs font-extrabold text-[#111]">
           {order.orderType === 'dine_in' ? (
             <>
-              <Utensils className="w-4 h-4 text-mcd-yellow" />
+              <Utensils className="w-4 h-4 text-[#FFBC0D]" />
               <span>{t.eatIn}</span>
             </>
           ) : (
             <>
-              <ShoppingBag className="w-4 h-4 text-mcd-yellow" />
+              <ShoppingBag className="w-4 h-4 text-[#FFBC0D]" />
               <span>{t.takeAway}</span>
             </>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* Main Center Area: Huge Order Number + Animated Receipt */}
-      <div className="flex-1 w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10 my-4 z-10 overflow-hidden">
-        {/* Left Side: Massive Order Number & Instructions */}
-        <div className="flex-1 flex flex-col justify-center space-y-6">
+      {/* Main Content: Crisp Order Number Ticket + Complete Clean Receipt */}
+      <div className="flex-1 w-full max-w-6xl mx-auto px-8 py-6 grid grid-cols-1 md:grid-cols-12 gap-10 items-center overflow-hidden">
+        {/* Left: Massive Order Number */}
+        <div className="md:col-span-7 flex flex-col justify-center space-y-6">
           <div className="space-y-1">
-            <span className="text-xs font-black uppercase tracking-widest text-mcd-red block">
-              {t.thankYou}
-            </span>
-            <h2 className="text-xl lg:text-2xl font-bold text-[#4B5563]">
+            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#008837]">
+              <Check className="w-4 h-4 stroke-[3]" />
+              <span>{t.thankYou}</span>
+            </div>
+            <h1 className="text-3xl lg:text-4xl font-black text-[#111] tracking-tight">
               {t.yourOrderNumber}
-            </h2>
+            </h1>
           </div>
 
-          {/* Huge Order Number Card */}
-          <div className="w-full max-w-md bg-white border-4 border-mcd-yellow rounded-3xl p-8 text-center shadow-xl relative overflow-hidden">
-            <div className="text-7xl lg:text-9xl font-black text-[#111] tracking-tighter leading-none py-2 drop-shadow-sm">
-              #{order.orderNumber}
-            </div>
-            <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-mcd-yellow text-black font-black text-sm">
-              {order.tableNumber ? (
-                <>
-                  <Utensils className="w-4 h-4" />
-                  <span>Gdzie odebrać: Dostawa do stolika #{order.tableNumber}</span>
-                </>
-              ) : order.orderType === 'take_away' ? (
-                <>
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Gdzie odebrać: Przy ladzie (Na wynos)</span>
-                </>
-              ) : (
-                <>
-                  <Utensils className="w-4 h-4" />
-                  <span>Gdzie odebrać: Przy ladzie (Na miejscu)</span>
-                </>
-              )}
-            </div>
-            <div className="mt-4 pt-4 border-t border-[#F3F4F6] flex items-center justify-center gap-2 text-xs font-bold text-[#374151] uppercase tracking-wider">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Status: Przygotowywane w kuchni</span>
+          {/* Official Flat Order Ticket Box */}
+          <div className="w-full max-w-md border-2 border-[#E5E5E5] rounded-xl overflow-hidden bg-white">
+            <div className="h-3 bg-[#FFBC0D]" />
+            <div className="p-8 text-center">
+              <span className="text-8xl lg:text-9xl font-black text-[#111] tracking-tight leading-none block">
+                {order.orderNumber}
+              </span>
+
+              <div className="mt-5 pt-4 border-t border-[#F0F0F0] flex items-center justify-center gap-2 text-sm font-extrabold text-[#111]">
+                {order.tableNumber ? (
+                  <span>Dostawa do stolika #{order.tableNumber}</span>
+                ) : order.orderType === 'take_away' ? (
+                  <span>Odbiór przy ladzie (Na wynos)</span>
+                ) : (
+                  <span>Odbiór przy ladzie (Na miejscu)</span>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Instructions */}
-          <div className="space-y-3 max-w-md">
-            <div className="flex items-start space-x-3 bg-white border border-[#E5E7EB] p-4 rounded-2xl shadow-sm">
-              <Printer className="w-6 h-6 text-mcd-yellow shrink-0 mt-0.5" />
-              <p className="text-sm text-[#4B5563] leading-snug">
-                {t.takeReceipt}
-              </p>
+          {/* Clean Instruction Lines */}
+          <div className="space-y-2.5 max-w-md text-sm text-[#4A4A4A] font-semibold">
+            <div className="flex items-center gap-3 py-2 border-b border-[#F0F0F0]">
+              <Printer className="w-5 h-5 text-[#111] shrink-0" />
+              <span>{t.takeReceipt}</span>
             </div>
-            <div className="flex items-start space-x-3 bg-white border border-[#E5E7EB] p-4 rounded-2xl shadow-sm">
-              <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-[#4B5563] leading-snug">
-                {t.watchScreen} Twój numer pojawi się na ekranie nad ladą.
-              </p>
+            <div className="flex items-center gap-3 py-2">
+              <Utensils className="w-5 h-5 text-[#111] shrink-0" />
+              <span>Obserwuj swój numer na tablicy nad ladą odbioru.</span>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Virtual Thermal Receipt sliding down */}
-        <div className="w-80 lg:w-96 flex flex-col items-center">
-          {/* Printer Slot Graphic */}
-          <div className="w-full h-4 bg-[#262626] border-2 border-[#111] rounded-t-lg shadow-inner z-20 flex items-center justify-center">
-            <div className="w-48 h-1 bg-black rounded-full" />
-          </div>
-
-          {/* Paper Receipt */}
-          <div className="w-full bg-[#FFFFFF] text-[#111111] p-6 font-mono text-xs shadow-2xl rounded-b-lg border-x-2 border-b-2 border-[#D1D5DB] receipt-slide-in max-h-[500px] overflow-y-auto scrollbar-thin">
-            {/* Receipt Header */}
-            <div className="text-center border-b-2 border-dashed border-[#888] pb-3 mb-3">
-              <h3 className="font-black text-sm uppercase tracking-wider text-black">McDonald's Polska</h3>
-              <p className="text-[10px] text-[#555]">Spółka z o.o. • NIP 521-008-81-22</p>
-              <p className="text-[10px] text-[#555]">Restauracja #04 • Warszawa Centralna</p>
-              <p className="text-[10px] text-[#555] mt-1 font-bold">
-                {new Date(order.createdAt).toLocaleString('pl-PL')}
-              </p>
-              <div className="mt-2 inline-block bg-black text-white px-3 py-1 font-black text-lg rounded">
-                ZAMÓWIENIE #{order.orderNumber}
-              </div>
-              {order.tableNumber && (
-                <div className="mt-1 font-black text-xs text-black">
-                  OBSŁUGA STOLIKA: #{order.tableNumber}
-                </div>
-              )}
+        {/* Right: Complete Thermal Receipt (No clipping, clean printer top) */}
+        <div className="md:col-span-5 flex flex-col items-center justify-center h-full overflow-hidden">
+          <div className="w-full max-w-sm flex flex-col">
+            {/* Thermal Printer Slot */}
+            <div className="w-full h-3 bg-[#222222] rounded-t flex items-center justify-center">
+              <div className="w-3/4 h-1 bg-black rounded-full" />
             </div>
 
-            {/* Receipt Items List */}
-            <div className="space-y-2 border-b-2 border-dashed border-[#888] pb-3 mb-3">
-              {order.items.map((item, idx) => (
-                <div key={idx} className="space-y-0.5">
-                  <div className="flex justify-between font-bold text-black">
-                    <span>
-                      {item.quantity}x {item.menuItem.name}
-                    </span>
-                    <span>{item.totalPrice.toFixed(2).replace('.', ',')} zł</span>
+            {/* Paper Receipt */}
+            <div className="w-full bg-[#FAFAFA] text-[#111111] p-5 font-mono text-xs border-x border-b border-[#D4D4D4] max-h-[62vh] overflow-y-auto scrollbar-thin">
+              <div className="text-center border-b border-dashed border-[#9CA3AF] pb-3 mb-3">
+                <h3 className="font-black text-sm uppercase tracking-wider">McDonald&apos;s Polska</h3>
+                <p className="text-[10px] text-[#555]">Restauracja #04 • Warszawa Centralna</p>
+                <p className="text-[10px] text-[#555] mt-0.5">
+                  {new Date(order.createdAt).toLocaleString('pl-PL')}
+                </p>
+                <div className="mt-2 inline-block bg-[#111] text-white px-3 py-1 font-black text-base rounded-sm">
+                  NUMER {order.orderNumber}
+                </div>
+                {order.tableNumber && (
+                  <p className="mt-1 font-black text-xs">STOLIK #{order.tableNumber}</p>
+                )}
+              </div>
+
+              {/* Items */}
+              <div className="space-y-2 border-b border-dashed border-[#9CA3AF] pb-3 mb-3">
+                {order.items.map((item, idx) => (
+                  <div key={idx} className="space-y-0.5">
+                    <div className="flex justify-between font-bold">
+                      <span>{item.quantity}x {item.menuItem.name}</span>
+                      <span>{item.totalPrice.toFixed(2).replace('.', ',')} zł</span>
+                    </div>
+                    {item.mealSize !== 'single' && (
+                      <div className="text-[10px] text-[#555] pl-3">
+                        {item.mealSize === 'large' ? 'McZestaw Powiększony' : 'McZestaw'}
+                      </div>
+                    )}
+                    {item.selectedSide && (
+                      <div className="text-[10px] text-[#555] pl-3">{item.selectedSide.name}</div>
+                    )}
+                    {item.selectedDrink && (
+                      <div className="text-[10px] text-[#555] pl-3">{item.selectedDrink.name}</div>
+                    )}
+                    {item.customIngredients.map((ci) => (
+                      <div key={ci.id} className="text-[10px] text-[#555] pl-3">
+                        {ci.type === 'remove' ? 'Bez: ' : '+ '} {ci.name}
+                      </div>
+                    ))}
+                    {item.selectedSauces.map(({ sauce, quantity }) => (
+                      <div key={sauce.id} className="text-[10px] text-[#555] pl-3">
+                        {quantity}x {sauce.name}
+                      </div>
+                    ))}
                   </div>
+                ))}
+              </div>
 
-                  {item.mealSize !== 'single' && (
-                    <div className="text-[10px] text-[#555] pl-3">
-                      • {item.mealSize === 'large' ? 'McZestaw Powiększony' : 'McZestaw'}
-                    </div>
-                  )}
-
-                  {item.selectedSide && (
-                    <div className="text-[10px] text-[#555] pl-3">• {item.selectedSide.name}</div>
-                  )}
-
-                  {item.selectedDrink && (
-                    <div className="text-[10px] text-[#555] pl-3">• {item.selectedDrink.name}</div>
-                  )}
-
-                  {item.customIngredients.map((ci) => (
-                    <div key={ci.id} className="text-[10px] text-[#444] pl-3">
-                      • {ci.name}
-                    </div>
-                  ))}
-
-                  {item.selectedSauces.map(({ sauce, quantity }) => (
-                    <div key={sauce.id} className="text-[10px] text-[#444] pl-3">
-                      • {quantity}x {sauce.name}
-                    </div>
-                  ))}
+              {/* Summary */}
+              <div className="space-y-1 mb-3">
+                <div className="flex justify-between text-sm font-black">
+                  <span>SUMA PLN:</span>
+                  <span>{order.totalAmount.toFixed(2).replace('.', ',')} zł</span>
                 </div>
-              ))}
-            </div>
-
-            {/* Receipt Summary */}
-            <div className="space-y-1 mb-3">
-              <div className="flex justify-between text-base font-black text-black">
-                <span>SUMA PLN:</span>
-                <span>{order.totalAmount.toFixed(2).replace('.', ',')} zł</span>
-              </div>
-              <div className="flex justify-between text-[10px] text-[#555]">
-                <span>W tym PTU A (23%):</span>
-                <span>{(order.totalAmount * 0.187).toFixed(2)} zł</span>
-              </div>
-              <div className="flex justify-between text-[10px] text-[#555]">
-                <span>Płatność:</span>
-                <span className="font-bold uppercase">
-                  {order.paymentMethod === 'blik'
-                    ? 'BLIK (ZATWIERDZONA)'
-                    : order.paymentMethod === 'cashier'
-                    ? 'PŁATNOŚĆ PRZY KASIE'
-                    : order.paymentMethod}
-                </span>
-              </div>
-              <div className="text-[9px] text-[#777] pt-1">
-                Nr transakcji: {order.receiptNumber}
-              </div>
-            </div>
-
-            {/* Receipt Footer & QR code */}
-            <div className="text-center pt-2 border-t-2 border-dashed border-[#888] space-y-2">
-              <p className="text-[10px] font-bold">Zbieraj punkty w aplikacji McDonald's!</p>
-              <div className="flex justify-center py-1">
-                <div className="p-2 bg-white border border-[#999] rounded">
-                  <QrCode className="w-16 h-16 text-black" />
+                <div className="flex justify-between text-[10px] text-[#555]">
+                  <span>Płatność:</span>
+                  <span className="font-bold uppercase">
+                    {order.paymentMethod === 'blik' ? 'BLIK' : 'PRZY KASIE'}
+                  </span>
+                </div>
+                <div className="text-[9px] text-[#6B7280] pt-1">
+                  Paragon: {order.receiptNumber}
                 </div>
               </div>
-              <p className="text-[9px] text-[#777]">*** DZIĘKUJEMY I ZAPRASZAMY PONOWNIE ***</p>
+
+              <div className="text-center pt-2 border-t border-dashed border-[#9CA3AF] space-y-1.5">
+                <div className="flex justify-center">
+                  <QrCode className="w-12 h-12 text-[#111]" />
+                </div>
+                <p className="text-[9px] text-[#6B7280]">Dziękujemy i zapraszamy ponownie</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar: Auto-return timer & Finish Button */}
-      <div className="w-full max-w-6xl mx-auto flex items-center justify-between border-t border-[#E5E7EB] pt-4 z-10 text-xs text-[#6B7280]">
-        <div className="flex items-center gap-2">
-          <span>{t.autoReturn}:</span>
-          <span className="font-black text-[#111] text-sm">{countdown} s</span>
-        </div>
+      {/* Bottom Footer Bar */}
+      <footer className="h-16 px-8 border-t border-[#E5E5E5] flex items-center justify-between shrink-0 bg-white">
+        <span className="text-xs font-semibold text-[#6B7280]">
+          {t.autoReturn}: <strong className="text-[#111] font-black">{countdown} s</strong>
+        </span>
 
         <button
           onClick={() => {
             sound.playTap();
             onFinish();
           }}
-          className="px-8 py-3.5 rounded-2xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-sm flex items-center gap-2 shadow-sm transition-all transform active:scale-95"
+          className="px-7 py-2.5 rounded-md bg-[#FFBC0D] hover:bg-[#F5B300] text-[#111] font-extrabold text-sm flex items-center gap-2 transition-colors"
         >
           <span>{t.finishNow}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
-      </div>
+      </footer>
     </div>
   );
 };

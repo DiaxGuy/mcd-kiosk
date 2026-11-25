@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, QrCode, Tag, Sparkles, CheckCircle2, Smartphone } from 'lucide-react';
+import { X, Delete, Check, QrCode } from 'lucide-react';
 import { AppliedCoupon } from '../types';
 import { sound } from '../utils/audio';
 import { OfficialLogo } from './OfficialLogo';
@@ -14,31 +14,35 @@ interface CouponsModalProps {
 const PRESET_COUPONS = [
   {
     code: 'DRWAL10',
-    title: 'Zima z Drwalem: -10,00 zł na zamówienie',
+    title: 'Burger Drwala + Frytki',
+    subtitle: 'Rabat -10,00 zł na zamówienie',
     discount: 10.0,
     minTotal: 25.0,
-    badge: 'HIT SEZONU',
+    image: 'https://cdn.mcdonalds.pl/uploads/20261104143818/pl10-p00001662-drwal-2026-na-www-1090x664px-burger-drwala-klasyczny.png',
   },
   {
     code: '2FORU',
-    title: 'OkazYEAH! 2forU: -5,00 zł rabatu',
+    title: 'OkazYEAH! 2forU®',
+    subtitle: 'Zniżka -5,00 zł w koszyku',
     discount: 5.0,
     minTotal: 12.0,
-    badge: 'POPULARNE',
+    image: 'https://cdn.mcdonalds.pl/uploads/20200617144103/mcd-www-packshoty-singlepage-2foru-1.png',
   },
   {
     code: 'MOJEM20',
-    title: 'Kupon MojeM: -20% na całą tackę',
+    title: 'Zniżka MojeM -20%',
+    subtitle: 'Na całe Twoje zamówienie',
     percent: 0.2,
     minTotal: 15.0,
-    badge: 'MOJEM',
+    image: 'https://cdn.mcdonalds.pl/uploads/20240708120552/354267-big-mac-na-www-1090x664px-mczestaw.png',
   },
   {
     code: 'FRYTKI',
-    title: 'Chrupiące Frytki gratis (-7,90 zł)',
+    title: 'Średnie Frytki Gratis',
+    subtitle: 'Rabat -7,90 zł przy zamówieniu',
     discount: 7.9,
     minTotal: 18.0,
-    badge: 'APP EXCLUSIVE',
+    image: 'https://cdn.mcdonalds.pl/uploads/20241104114431/354308-nowe-frytki-2024-na-www-1090x664px-2-frytki-srednie.png',
   },
 ];
 
@@ -51,10 +55,18 @@ export const CouponsModal: React.FC<CouponsModalProps> = ({
   const [codeInput, setCodeInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const handleDigit = (digit: string) => {
+    sound.playTap();
+    setError(null);
+    if (codeInput.length < 6) {
+      setCodeInput((prev) => prev + digit);
+    }
+  };
+
   const handleApplyPreset = (preset: (typeof PRESET_COUPONS)[number]) => {
     sound.playTap();
     if (cartTotal < preset.minTotal) {
-      setError(`Minimalna wartość koszyka dla kuponu ${preset.code} to ${preset.minTotal.toFixed(2)} zł.`);
+      setError(`Minimalna kwota dla tej oferty to ${preset.minTotal.toFixed(2).replace('.', ',')} zł.`);
       return;
     }
     const discountAmount = preset.percent
@@ -71,23 +83,15 @@ export const CouponsModal: React.FC<CouponsModalProps> = ({
     onClose();
   };
 
-  const handleApplyManualCode = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleApplyManualCode = () => {
     const cleaned = codeInput.trim().toUpperCase();
     if (cleaned.length < 4) {
-      setError('Wpisz minimum 4-znakowy kod z aplikacji McDonald’s.');
+      setError('Wpisz 4-cyfrowy kod z aplikacji McDonald’s.');
       return;
     }
 
-    const matched = PRESET_COUPONS.find((p) => p.code === cleaned);
-    if (matched) {
-      handleApplyPreset(matched);
-      return;
-    }
-
-    // Any valid 4-digit/4-char MojeM app code unlocks a 15% loyalty discount
     if (cartTotal <= 0) {
-      setError('Dodaj najpierw produkty do zamówienia, aby użyć kodu MojeM.');
+      setError('Dodaj najpierw produkty do zamówienia.');
       return;
     }
 
@@ -95,7 +99,7 @@ export const CouponsModal: React.FC<CouponsModalProps> = ({
     sound.playSuccess();
     onApplyCoupon({
       code: cleaned,
-      title: `Kod MojeM (${cleaned}): -15% rabatu`,
+      title: `Kupon MojeM (${cleaned})`,
       discountAmount: loyaltyDiscount,
       pointsEarned: Math.round(cartTotal * 10) + 100,
     });
@@ -103,19 +107,16 @@ export const CouponsModal: React.FC<CouponsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/75 backdrop-blur-sm select-none animate-fadeIn">
-      <div className="w-full max-w-3xl bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl overflow-hidden text-[#1F1F1F]">
-        {/* Header */}
-        <div className="p-6 bg-[#111111] text-white flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 select-none">
+      <div className="w-full max-w-4xl bg-white border border-[#D4D4D4] rounded-xl overflow-hidden text-[#292929] flex flex-col">
+        {/* Clean Official MojeM Header */}
+        <div className="px-7 py-5 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
+          <div className="flex items-center space-x-3.5">
             <OfficialLogo className="w-10 h-9" />
             <div>
-              <h2 className="text-xl font-black flex items-center gap-2">
-                <span>MojeM Rewards & OkazYEAH!</span>
-                <Sparkles className="w-4 h-4 text-mcd-yellow" />
-              </h2>
-              <p className="text-xs text-gray-300">
-                Zeskanuj kod z aplikacji McDonald&apos;s lub wybierz aktywny kupon rabatowy
+              <h2 className="text-xl font-extrabold text-[#111]">MojeM</h2>
+              <p className="text-xs text-[#6B7280] font-semibold">
+                Zeskanuj kod z aplikacji lub wpisz kod jednorazowy
               </p>
             </div>
           </div>
@@ -124,97 +125,136 @@ export const CouponsModal: React.FC<CouponsModalProps> = ({
               sound.playTap();
               onClose();
             }}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-mcd-red text-white flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#4B5563] flex items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6 bg-[#F9FAFB]">
-          {/* Active Coupon Banner */}
-          {appliedCoupon && (
-            <div className="p-4 bg-emerald-50 border-2 border-emerald-500 rounded-2xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
-                <div>
-                  <span className="font-black text-sm text-emerald-900 block">
-                    Aktywny kupon: {appliedCoupon.code}
-                  </span>
-                  <span className="text-xs text-emerald-700 font-medium">
-                    {appliedCoupon.title} (-{appliedCoupon.discountAmount.toFixed(2).replace('.', ',')} zł)
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  sound.playTap();
-                  onApplyCoupon(null);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 text-xs font-bold text-red-600 hover:bg-red-50"
-              >
-                Usuń kupon
-              </button>
+        {/* Active Coupon Notice */}
+        {appliedCoupon && (
+          <div className="mx-7 mt-5 px-4 py-3 bg-[#E6F4EA] border border-[#008837]/30 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2.5 text-sm font-bold text-[#008837]">
+              <Check className="w-4 h-4" />
+              <span>
+                Aktywny kupon {appliedCoupon.code} (−{appliedCoupon.discountAmount.toFixed(2).replace('.', ',')} zł)
+              </span>
             </div>
-          )}
+            <button
+              onClick={() => {
+                sound.playTap();
+                onApplyCoupon(null);
+              }}
+              className="px-3 py-1 rounded border border-[#D4D4D4] bg-white text-xs font-bold text-[#DB0007] hover:bg-[#FEF2F2]"
+            >
+              Usuń
+            </button>
+          </div>
+        )}
 
-          {/* Manual App Code Input */}
-          <form onSubmit={handleApplyManualCode} className="bg-white border border-[#E5E7EB] rounded-2xl p-5 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 text-sm font-black text-[#111]">
-              <Smartphone className="w-4 h-4 text-mcd-yellow" />
-              <span>Wpisz 4-znakowy kod z aplikacji MojeM (np. 1234 lub DRWAL10)</span>
+        {/* Two-column EOTF Layout: Left = App Code Keypad | Right = Visual OkazYEAH Coupons */}
+        <div className="p-7 grid grid-cols-1 md:grid-cols-12 gap-7 bg-white">
+          {/* Left: App 4-digit Code Entry */}
+          <div className="md:col-span-5 flex flex-col justify-between border border-[#E5E5E5] rounded-lg p-5 bg-[#FAFAFA]">
+            <div className="space-y-3 text-center">
+              <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#4A4A4A]">
+                <QrCode className="w-4 h-4 text-[#111]" />
+                <span>Kod z aplikacji</span>
+              </div>
+
+              {/* 4-digit visual slots */}
+              <div className="flex items-center justify-center gap-2 py-2">
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-12 h-14 rounded-md border-2 bg-white flex items-center justify-center font-black text-2xl text-[#111] ${
+                      codeInput[i] ? 'border-[#FFBC0D]' : 'border-[#D4D4D4]'
+                    }`}
+                  >
+                    {codeInput[i] || ''}
+                  </div>
+                ))}
+              </div>
+              {error && <p className="text-xs font-bold text-[#DB0007]">{error}</p>}
             </div>
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <QrCode className="w-5 h-5 text-[#9CA3AF] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={codeInput}
-                  onChange={(e) => {
+
+            {/* Clean Flat Numeric Keypad */}
+            <div className="space-y-2.5 mt-3">
+              <div className="grid grid-cols-3 gap-2">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => handleDigit(d)}
+                    className="h-11 rounded border border-[#D4D4D4] bg-white hover:bg-[#FFFDF5] active:bg-[#FFBC0D] font-extrabold text-lg text-[#111]"
+                  >
+                    {d}
+                  </button>
+                ))}
+                <button
+                  onClick={() => {
+                    sound.playTap();
+                    setCodeInput('');
                     setError(null);
-                    setCodeInput(e.target.value.toUpperCase());
                   }}
-                  placeholder="Wpisz kod z aplikacji..."
-                  maxLength={12}
-                  className="w-full pl-11 pr-4 py-3 bg-[#F3F4F6] border border-[#D1D5DB] rounded-xl font-black text-base tracking-widest uppercase focus:outline-none focus:border-mcd-yellow"
-                />
+                  className="h-11 rounded border border-[#D4D4D4] bg-white hover:bg-[#F5F5F5] text-xs font-bold text-[#6B7280]"
+                >
+                  Wyczyść
+                </button>
+                <button
+                  onClick={() => handleDigit('0')}
+                  className="h-11 rounded border border-[#D4D4D4] bg-white hover:bg-[#FFFDF5] active:bg-[#FFBC0D] font-extrabold text-lg text-[#111]"
+                >
+                  0
+                </button>
+                <button
+                  onClick={() => {
+                    sound.playTap();
+                    setCodeInput((p) => p.slice(0, -1));
+                  }}
+                  className="h-11 rounded border border-[#D4D4D4] bg-white hover:bg-[#F5F5F5] text-[#111] flex items-center justify-center"
+                >
+                  <Delete className="w-4 h-4" />
+                </button>
               </div>
+
               <button
-                type="submit"
-                className="px-6 py-3 rounded-xl bg-mcd-yellow hover:bg-[#EAB308] text-black font-black text-sm transition-all active:scale-95 shadow-sm"
+                onClick={handleApplyManualCode}
+                disabled={codeInput.length < 4}
+                className="w-full py-3 rounded-md bg-[#FFBC0D] hover:bg-[#F5B300] disabled:bg-[#E5E5E5] disabled:text-[#9CA3AF] text-[#111] font-extrabold text-sm transition-colors"
               >
-                Aktywuj kod
+                Zatwierdź kod
               </button>
             </div>
-            {error && <p className="text-xs font-bold text-mcd-red">{error}</p>}
-          </form>
+          </div>
 
-          {/* Ready-to-use Kupony OkazYEAH */}
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#6B7280] mb-3 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-mcd-red" />
-              <span>Dostępne kupony OkazYEAH! (Kliknij, aby użyć)</span>
+          {/* Right: Visual McDonald's Coupon Cards with Real Food Photos */}
+          <div className="md:col-span-7 flex flex-col">
+            <h3 className="text-sm font-extrabold text-[#111] mb-3">
+              Moje OkazYEAH! (dotknij, aby aktywować)
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3.5 flex-1">
               {PRESET_COUPONS.map((preset) => (
                 <button
                   key={preset.code}
                   onClick={() => handleApplyPreset(preset)}
-                  className="p-4 rounded-2xl bg-white hover:bg-[#FFFBEB] border-2 border-[#E5E7EB] hover:border-mcd-yellow text-left transition-all active:scale-98 flex flex-col justify-between space-y-2 shadow-sm"
+                  className="p-3.5 rounded-lg bg-white hover:bg-[#FFFDF5] border border-[#E5E5E5] hover:border-[#FFBC0D] flex flex-col items-center text-center justify-between transition-colors"
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="px-2.5 py-0.5 rounded-full bg-mcd-red text-white text-[10px] font-black tracking-wider">
-                      {preset.badge}
+                  <img
+                    src={preset.image}
+                    alt={preset.title}
+                    className="h-20 w-full object-contain my-1"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="font-extrabold text-sm text-[#111] block leading-tight">
+                      {preset.title}
                     </span>
-                    <span className="font-mono font-black text-xs text-[#6B7280] bg-[#F3F4F6] px-2 py-0.5 rounded">
-                      {preset.code}
+                    <span className="text-xs font-bold text-[#008837] block">
+                      {preset.subtitle}
+                    </span>
+                    <span className="text-[11px] text-[#9CA3AF] block">
+                      Min. {preset.minTotal.toFixed(0)} zł
                     </span>
                   </div>
-                  <p className="font-extrabold text-sm text-[#111] leading-snug">
-                    {preset.title}
-                  </p>
-                  <span className="text-[11px] text-[#6B7280] font-semibold">
-                    Min. zamówienie: {preset.minTotal.toFixed(2).replace('.', ',')} zł
-                  </span>
                 </button>
               ))}
             </div>
