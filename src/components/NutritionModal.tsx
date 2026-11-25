@@ -24,17 +24,17 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({ item, onClose })
     : ['Gluten (pszenica)', 'Mleko (laktoza)', 'Sezam', 'Gorczyca', 'Jaja'];
 
   return (
-    <div className="fixed inset-0 z-[65] flex items-center justify-center p-6 bg-black/75 backdrop-blur-sm select-none animate-fadeIn">
-      <div className="w-full max-w-xl bg-white border border-[#E5E7EB] rounded-3xl shadow-2xl overflow-hidden text-[#1F1F1F]">
+    <div className="fixed inset-0 z-[65] flex items-center justify-center p-6 bg-black/70 select-none">
+      <div className="w-full max-w-xl bg-white border border-[#D4D4D4] rounded-xl overflow-hidden text-[#292929]">
         {/* Header */}
-        <div className="p-5 bg-[#F9FAFB] border-b border-[#E5E7EB] flex items-center justify-between">
+        <div className="p-5 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-mcd-yellow/20 text-[#92400E] flex items-center justify-center">
+            <div className="w-9 h-9 rounded bg-[#FFF8E1] text-[#8A5A00] flex items-center justify-center">
               <Info className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-[#111]">{item.name}</h3>
-              <p className="text-xs text-[#6B7280] font-medium">Wartości odżywcze i alergeny</p>
+              <h3 className="text-lg font-extrabold text-[#111]">{item.name}</h3>
+              <p className="text-xs text-[#6B7280] font-semibold">Wartości odżywcze i alergeny</p>
             </div>
           </div>
 
@@ -43,7 +43,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({ item, onClose })
               sound.playTap();
               onClose();
             }}
-            className="w-9 h-9 rounded-full bg-[#E5E7EB] hover:bg-mcd-red hover:text-white flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] flex items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

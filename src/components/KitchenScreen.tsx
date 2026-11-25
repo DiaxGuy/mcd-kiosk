@@ -3,7 +3,6 @@ import {
   ChefHat,
   Lock,
   Delete,
-  CheckCircle2,
   Clock,
   Utensils,
   ShoppingBag,
@@ -54,7 +53,7 @@ export const KitchenScreen: React.FC = () => {
 
   useEffect(() => {
     const updateClock = () => {
-      setTime(new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setTime(new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }));
     };
     updateClock();
     const timer = setInterval(updateClock, 1000);
@@ -100,49 +99,50 @@ export const KitchenScreen: React.FC = () => {
     }
   };
 
-  // PIN LOCK SCREEN
+  // PIN LOCK SCREEN (Clean White McDonald's EOTF Style)
   if (!unlocked) {
     return (
-      <div className="w-screen h-screen bg-[#111111] text-white flex items-center justify-center p-6 select-none">
-        <div className="w-full max-w-sm bg-[#1A1A1A] border border-white/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-          <div className="flex flex-col items-center space-y-3">
-            <OfficialLogo className="w-14 h-12" />
-            <div className="w-12 h-12 rounded-2xl bg-mcd-yellow/15 text-mcd-yellow flex items-center justify-center">
-              <Lock className="w-6 h-6" />
-            </div>
+      <div className="w-screen h-screen bg-[#FAFAFA] text-[#292929] flex items-center justify-center p-6 select-none">
+        <div className="w-full max-w-sm bg-white border border-[#D4D4D4] rounded-xl p-8 text-center space-y-6">
+          <div className="flex flex-col items-center space-y-2.5">
+            <OfficialLogo className="w-12 h-11" />
             <div>
-              <h1 className="text-xl font-black tracking-tight">Panel Kuchni (KDS)</h1>
-              <p className="text-xs text-gray-400 mt-1">Wpisz 4-cyfrowy kod PIN, aby uzyskać dostęp</p>
+              <h1 className="text-xl font-extrabold text-[#111]">Panel Kuchni</h1>
+              <p className="text-xs text-[#6B7280] font-semibold mt-0.5">
+                Wpisz 4-cyfrowy kod PIN
+              </p>
             </div>
           </div>
 
-          {/* PIN Dots */}
-          <div className="flex items-center justify-center gap-4 py-2">
+          {/* 4 Individual PIN Boxes */}
+          <div className="flex items-center justify-center gap-2.5">
             {[0, 1, 2, 3].map((idx) => (
               <div
                 key={idx}
-                className={`w-4 h-4 rounded-full transition-all ${
+                className={`w-12 h-14 rounded border-2 flex items-center justify-center font-black text-2xl ${
                   pinError
-                    ? 'bg-mcd-red scale-110'
+                    ? 'border-[#DB0007] bg-[#FEF2F2] text-[#DB0007]'
                     : idx < pinInput.length
-                    ? 'bg-mcd-yellow scale-110'
-                    : 'bg-white/15'
+                    ? 'border-[#FFBC0D] bg-[#FFFDF5] text-[#111]'
+                    : 'border-[#D4D4D4] bg-white'
                 }`}
-              />
+              >
+                {idx < pinInput.length ? '•' : ''}
+              </div>
             ))}
           </div>
 
           {pinError && (
-            <p className="text-xs font-bold text-mcd-red">Nieprawidłowy kod PIN</p>
+            <p className="text-xs font-bold text-[#DB0007]">Nieprawidłowy kod PIN</p>
           )}
 
-          {/* Numeric Keypad */}
-          <div className="grid grid-cols-3 gap-2.5">
+          {/* Clean Flat Keypad */}
+          <div className="grid grid-cols-3 gap-2">
             {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
               <button
                 key={d}
                 onClick={() => handleDigit(d)}
-                className="h-14 rounded-2xl bg-white/5 hover:bg-mcd-yellow hover:text-black font-black text-xl transition-all active:scale-95 border border-white/10"
+                className="h-12 rounded border border-[#D4D4D4] bg-[#FAFAFA] hover:bg-[#FFFDF5] active:bg-[#FFBC0D] font-extrabold text-xl text-[#111] transition-colors"
               >
                 {d}
               </button>
@@ -153,13 +153,13 @@ export const KitchenScreen: React.FC = () => {
                 setPinInput('');
                 setPinError(false);
               }}
-              className="h-14 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs"
+              className="h-12 rounded border border-[#D4D4D4] bg-white hover:bg-[#F5F5F5] text-[#6B7280] font-bold text-xs"
             >
-              WYCZYŚĆ
+              Wyczyść
             </button>
             <button
               onClick={() => handleDigit('0')}
-              className="h-14 rounded-2xl bg-white/5 hover:bg-mcd-yellow hover:text-black font-black text-xl transition-all active:scale-95 border border-white/10"
+              className="h-12 rounded border border-[#D4D4D4] bg-[#FAFAFA] hover:bg-[#FFFDF5] active:bg-[#FFBC0D] font-extrabold text-xl text-[#111] transition-colors"
             >
               0
             </button>
@@ -168,7 +168,7 @@ export const KitchenScreen: React.FC = () => {
                 sound.playTap();
                 setPinInput((p) => p.slice(0, -1));
               }}
-              className="h-14 rounded-2xl bg-white/5 hover:bg-white/15 text-white flex items-center justify-center border border-white/10"
+              className="h-12 rounded border border-[#D4D4D4] bg-white hover:bg-[#F5F5F5] text-[#111] flex items-center justify-center"
             >
               <Delete className="w-5 h-5" />
             </button>
@@ -185,32 +185,33 @@ export const KitchenScreen: React.FC = () => {
 
   const getStatusBadge = (status?: string) => {
     if (status === 'ready') {
-      return { label: 'Gotowe do odbioru', cls: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+      return { label: 'Gotowe do odbioru', bar: 'bg-[#008837]', cls: 'bg-[#E6F4EA] text-[#008837] border-[#008837]/30' };
     }
     if (status === 'completed') {
-      return { label: 'Wydane', cls: 'bg-white/10 text-gray-300 border-white/20' };
+      return { label: 'Wydane', bar: 'bg-[#9CA3AF]', cls: 'bg-[#F5F5F5] text-[#4A4A4A] border-[#D4D4D4]' };
     }
-    return { label: 'W przygotowaniu', cls: 'bg-mcd-yellow/20 text-mcd-yellow border-mcd-yellow/40' };
+    return { label: 'W przygotowaniu', bar: 'bg-[#FFBC0D]', cls: 'bg-[#FFF8E1] text-[#8A5A00] border-[#FFBC0D]' };
   };
 
   return (
-    <div className="w-screen h-screen bg-[#111111] text-white flex flex-col overflow-hidden select-none">
-      {/* Top Header */}
-      <header className="h-20 px-8 bg-[#1A1A1A] border-b border-white/10 flex items-center justify-between shrink-0">
-        <div className="flex items-center space-x-4">
-          <OfficialLogo className="w-11 h-10" />
+    <div className="w-screen h-screen bg-white text-[#292929] flex flex-col overflow-hidden select-none">
+      {/* Top Bar */}
+      <header className="h-16 px-6 bg-white border-b border-[#E5E5E5] flex items-center justify-between shrink-0">
+        <div className="flex items-center space-x-3.5">
+          <OfficialLogo className="w-10 h-9" />
           <div>
-            <h1 className="text-xl font-black flex items-center gap-2">
-              <ChefHat className="w-5 h-5 text-mcd-yellow" />
-              <span>Kuchnia KDS — Zamówienia</span>
+            <h1 className="text-xl font-extrabold text-[#111] leading-none">
+              Kuchnia — Zamówienia
             </h1>
-            <p className="text-xs text-gray-400">Kliknij dowolne zamówienie, aby zobaczyć pełne szczegóły i zmienić status</p>
+            <span className="text-[11px] text-[#6B7280] font-semibold">
+              Kliknij zamówienie, aby zobaczyć szczegóły i zmienić status
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
-          {/* Status Filter Pills */}
-          <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/10 text-xs font-bold">
+        <div className="flex items-center space-x-2.5">
+          {/* Flat Tabs */}
+          <div className="flex items-center space-x-1.5">
             {[
               { id: 'all', label: `Wszystkie (${orders.length})` },
               { id: 'preparing', label: 'W przygotowaniu' },
@@ -223,8 +224,10 @@ export const KitchenScreen: React.FC = () => {
                   sound.playTap();
                   setStatusFilter(tab.id as any);
                 }}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  statusFilter === tab.id ? 'bg-mcd-yellow text-black font-black' : 'text-gray-400 hover:text-white'
+                className={`px-3.5 py-1.5 rounded border text-xs transition-colors ${
+                  statusFilter === tab.id
+                    ? 'bg-[#FFFDF5] border-[#FFBC0D] border-b-2 text-[#111] font-extrabold'
+                    : 'bg-white border-[#D4D4D4] text-[#4A4A4A] font-semibold hover:bg-[#FAFAFA]'
                 }`}
               >
                 {tab.label}
@@ -237,14 +240,14 @@ export const KitchenScreen: React.FC = () => {
               sound.playTap();
               fetchOrders();
             }}
-            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-gray-300"
+            className="w-9 h-9 rounded border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#292929] flex items-center justify-center"
             title="Odśwież"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-mono font-bold">
-            <Clock className="w-4 h-4 text-mcd-yellow" />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[#D4D4D4] bg-[#FAFAFA] text-xs font-extrabold text-[#111]">
+            <Clock className="w-3.5 h-3.5 text-[#FFBC0D]" />
             <span>{time}</span>
           </div>
 
@@ -254,7 +257,7 @@ export const KitchenScreen: React.FC = () => {
               setUnlocked(false);
               setPinInput('');
             }}
-            className="px-3.5 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30 text-xs font-bold flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded border border-[#D4D4D4] bg-white hover:bg-[#FEF2F2] text-[#DB0007] text-xs font-bold flex items-center gap-1.5"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Zablokuj</span>
@@ -263,11 +266,11 @@ export const KitchenScreen: React.FC = () => {
       </header>
 
       {/* Orders Grid */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 bg-[#FAFAFA]">
         {filteredOrders.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-2">
-            <ChefHat className="w-12 h-12 opacity-40" />
-            <p className="text-base font-bold">Brak zamówień w tej kategorii</p>
+          <div className="h-full flex flex-col items-center justify-center text-[#9CA3AF] space-y-2">
+            <ChefHat className="w-10 h-10 opacity-40" />
+            <p className="text-sm font-bold">Brak zamówień w tej kategorii</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -280,52 +283,47 @@ export const KitchenScreen: React.FC = () => {
                     sound.playTap();
                     setSelectedOrder(order);
                   }}
-                  className="bg-[#1A1A1A] hover:bg-[#222222] border border-white/10 hover:border-mcd-yellow rounded-2xl p-5 flex flex-col justify-between cursor-pointer transition-all space-y-4"
+                  className="bg-white border border-[#E5E5E5] hover:border-[#FFBC0D] rounded-lg overflow-hidden flex flex-col justify-between cursor-pointer transition-colors"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-4xl font-black text-white tracking-tight">
-                        #{order.orderNumber}
-                      </span>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
-                        <span>{new Date(order.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}</span>
-                        <span>•</span>
-                        <span>{order.orderType === 'dine_in' ? 'Na miejscu' : 'Na wynos'}</span>
-                        {order.tableNumber && (
-                          <span className="px-1.5 py-0.5 rounded bg-mcd-yellow/20 text-mcd-yellow font-bold">
-                            Stolik #{order.tableNumber}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                  <div className={`h-2 ${badge.bar}`} />
 
-                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-black border ${badge.cls}`}>
-                      {badge.label}
-                    </span>
-                  </div>
-
-                  {/* Items Preview */}
-                  <div className="space-y-1.5 border-t border-white/10 pt-3 text-xs">
-                    {order.items.slice(0, 4).map((item, i) => (
-                      <div key={i} className="flex justify-between text-gray-200 font-semibold">
-                        <span className="truncate pr-2">
-                          {item.quantity}x {item.menuItem.name}
-                          {item.mealSize !== 'single' ? ` (${item.mealSize === 'large' ? 'Powiększony' : 'Zestaw'})` : ''}
+                  <div className="p-4 flex flex-col flex-1 justify-between space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-3xl font-black text-[#111] tracking-tight leading-none block">
+                          #{order.orderNumber}
+                        </span>
+                        <span className="text-[11px] font-semibold text-[#6B7280] block mt-1">
+                          {new Date(order.createdAt).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })} • {order.orderType === 'dine_in' ? 'Na miejscu' : 'Na wynos'}
+                          {order.tableNumber ? ` • Stolik #${order.tableNumber}` : ''}
                         </span>
                       </div>
-                    ))}
-                    {order.items.length > 4 && (
-                      <span className="text-[11px] text-gray-400 block">+ {order.items.length - 4} więcej pozycji...</span>
-                    )}
-                  </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
-                    <span className="text-gray-400 font-bold uppercase">
-                      {order.paymentMethod === 'blik' ? 'BLIK' : 'Przy kasie'}
-                    </span>
-                    <span className="font-black text-mcd-yellow text-sm">
-                      {order.totalAmount.toFixed(2).replace('.', ',')} zł
-                    </span>
+                      <span className={`px-2 py-0.5 rounded border text-[10px] font-extrabold ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1 border-t border-[#F0F0F0] pt-2.5 text-xs">
+                      {order.items.slice(0, 4).map((item, i) => (
+                        <div key={i} className="font-bold text-[#292929] truncate">
+                          {item.quantity}x {item.menuItem.name}
+                          {item.mealSize !== 'single' ? ` (${item.mealSize === 'large' ? 'Powiększony' : 'Zestaw'})` : ''}
+                        </div>
+                      ))}
+                      {order.items.length > 4 && (
+                        <span className="text-[11px] text-[#6B7280] block">+ {order.items.length - 4} więcej</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-[#F0F0F0] text-xs">
+                      <span className="text-[#6B7280] font-bold uppercase">
+                        {order.paymentMethod === 'blik' ? 'BLIK' : 'Przy kasie'}
+                      </span>
+                      <span className="font-black text-[#111] text-sm">
+                        {order.totalAmount.toFixed(2).replace('.', ',')} zł
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
@@ -336,22 +334,21 @@ export const KitchenScreen: React.FC = () => {
 
       {/* FULL ORDER DETAIL MODAL */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-2xl bg-[#1A1A1A] border border-white/15 rounded-3xl shadow-2xl overflow-hidden text-white flex flex-col max-h-[90vh]">
-            {/* Modal Header */}
-            <div className="p-6 bg-[#222222] border-b border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="px-4 py-2 rounded-2xl bg-mcd-yellow text-black font-black text-3xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 select-none">
+          <div className="w-full max-w-2xl bg-white border border-[#D4D4D4] rounded-xl overflow-hidden text-[#292929] flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className="px-3.5 py-1.5 rounded bg-[#FFBC0D] text-[#111] font-black text-2xl">
                   #{selectedOrder.orderNumber}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-black">Szczegóły zamówienia</h2>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-black border ${getStatusBadge(selectedOrder.kitchenStatus).cls}`}>
+                    <h2 className="text-lg font-extrabold text-[#111]">Szczegóły zamówienia</h2>
+                    <span className={`px-2 py-0.5 rounded border text-[11px] font-extrabold ${getStatusBadge(selectedOrder.kitchenStatus).cls}`}>
                       {getStatusBadge(selectedOrder.kitchenStatus).label}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-[#6B7280] font-semibold mt-0.5">
                     {new Date(selectedOrder.createdAt).toLocaleString('pl-PL')} • Kiosk {selectedOrder.kioskId} • {selectedOrder.receiptNumber}
                   </p>
                 </div>
@@ -362,90 +359,88 @@ export const KitchenScreen: React.FC = () => {
                   sound.playTap();
                   setSelectedOrder(null);
                 }}
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-mcd-red text-white flex items-center justify-center transition-colors"
+                className="w-9 h-9 rounded-md border border-[#D4D4D4] bg-white hover:bg-[#FAFAFA] text-[#4B5563] flex items-center justify-center"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Metadata Grid */}
-            <div className="p-6 overflow-y-auto space-y-5">
+            <div className="p-6 overflow-y-auto space-y-5 bg-white">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-gray-400 block mb-1 flex items-center gap-1">
-                    {selectedOrder.orderType === 'dine_in' ? <Utensils className="w-3.5 h-3.5 text-mcd-yellow" /> : <ShoppingBag className="w-3.5 h-3.5 text-mcd-yellow" />}
-                    Typ zamówienia
+                <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5]">
+                  <span className="text-[#6B7280] block mb-1 flex items-center gap-1 font-semibold">
+                    {selectedOrder.orderType === 'dine_in' ? <Utensils className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
+                    Typ
                   </span>
-                  <strong className="font-black text-sm">
+                  <strong className="font-extrabold text-sm text-[#111]">
                     {selectedOrder.orderType === 'dine_in' ? 'Na miejscu' : 'Na wynos'}
                   </strong>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-gray-400 block mb-1">Gdzie odebrać</span>
-                  <strong className="font-black text-sm text-mcd-yellow">
+                <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5]">
+                  <span className="text-[#6B7280] block mb-1 font-semibold">Odbiór</span>
+                  <strong className="font-extrabold text-sm text-[#111]">
                     {selectedOrder.tableNumber ? `Stolik #${selectedOrder.tableNumber}` : 'Przy ladzie'}
                   </strong>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-gray-400 block mb-1 flex items-center gap-1">
-                    <CreditCard className="w-3.5 h-3.5 text-mcd-yellow" />
+                <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5]">
+                  <span className="text-[#6B7280] block mb-1 flex items-center gap-1 font-semibold">
+                    <CreditCard className="w-3.5 h-3.5" />
                     Płatność
                   </span>
-                  <strong className="font-black text-sm uppercase">
+                  <strong className="font-extrabold text-sm uppercase text-[#111]">
                     {selectedOrder.paymentMethod === 'blik' ? 'BLIK' : 'Przy kasie'}
                   </strong>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="text-gray-400 block mb-1 flex items-center gap-1">
-                    <Receipt className="w-3.5 h-3.5 text-mcd-yellow" />
+                <div className="p-3 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5]">
+                  <span className="text-[#6B7280] block mb-1 flex items-center gap-1 font-semibold">
+                    <Receipt className="w-3.5 h-3.5" />
                     Suma
                   </span>
-                  <strong className="font-black text-sm text-emerald-400">
+                  <strong className="font-black text-sm text-[#008837]">
                     {selectedOrder.totalAmount.toFixed(2).replace('.', ',')} zł
                   </strong>
                 </div>
               </div>
 
               {selectedOrder.appliedCoupon && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-2 font-bold text-emerald-300">
+                <div className="p-3 rounded-lg bg-[#E6F4EA] border border-[#008837]/30 flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 font-bold text-[#008837]">
                     <Tag className="w-4 h-4" />
                     Kupon: {selectedOrder.appliedCoupon.code} ({selectedOrder.appliedCoupon.title})
                   </span>
-                  <span className="font-black text-emerald-300">
+                  <span className="font-black text-[#008837]">
                     -{selectedOrder.appliedCoupon.discountAmount.toFixed(2).replace('.', ',')} zł
                   </span>
                 </div>
               )}
 
-              {/* Full Item Breakdown */}
               <div className="space-y-3">
-                <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#6B7280]">
                   Pozycje do przygotowania ({selectedOrder.items.length})
                 </h3>
                 {selectedOrder.items.map((item, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                  <div key={idx} className="p-4 rounded-lg bg-[#FAFAFA] border border-[#E5E5E5] space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-black text-base text-white">
+                      <span className="font-extrabold text-sm text-[#111]">
                         {item.quantity}x {item.menuItem.name}
                       </span>
-                      <span className="font-bold text-sm text-mcd-yellow">
+                      <span className="font-black text-sm text-[#111]">
                         {item.totalPrice.toFixed(2).replace('.', ',')} zł
                       </span>
                     </div>
 
-                    <div className="text-xs text-gray-300 space-y-1 pl-3 border-l-2 border-mcd-yellow/50">
+                    <div className="text-xs text-[#4A4A4A] space-y-1 pl-3 border-l-2 border-[#FFBC0D]">
                       {item.mealSize !== 'single' && (
                         <div>Rozmiar: <strong>{item.mealSize === 'large' ? 'McZestaw Powiększony' : 'McZestaw'}</strong></div>
                       )}
                       {item.selectedSide && <div>Dodatek: <strong>{item.selectedSide.name}</strong></div>}
                       {item.selectedDrink && <div>Napój: <strong>{item.selectedDrink.name}</strong></div>}
                       {item.customIngredients?.map((ci) => (
-                        <div key={ci.id} className={ci.type === 'remove' ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold'}>
-                          {ci.type === 'remove' ? '✖ BEZ: ' : '✚ EKSTRA: '} {ci.name}
+                        <div key={ci.id} className={ci.type === 'remove' ? 'text-[#DB0007] font-bold' : 'text-[#008837] font-bold'}>
+                          {ci.type === 'remove' ? 'Bez: ' : 'Dodatkowo: '} {ci.name}
                         </div>
                       ))}
                       {item.selectedSauces?.map(({ sauce, quantity }) => (
@@ -457,37 +452,35 @@ export const KitchenScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons: Change Status */}
-            <div className="p-6 bg-[#222222] border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
-              <span className="text-xs text-gray-400 font-bold">Zmień status zamówienia:</span>
-              <div className="flex items-center gap-2.5">
+            <div className="px-6 py-4 bg-[#FAFAFA] border-t border-[#E5E5E5] flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-[#6B7280] font-bold">Zmień status:</span>
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleStatusChange(selectedOrder.orderNumber, 'preparing')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all ${
+                  className={`px-4 py-2 rounded-md text-xs font-extrabold border transition-colors ${
                     selectedOrder.kitchenStatus === 'preparing'
-                      ? 'bg-mcd-yellow text-black'
-                      : 'bg-white/10 hover:bg-white/20 text-white'
+                      ? 'bg-[#FFBC0D] border-[#FFBC0D] text-[#111]'
+                      : 'bg-white border-[#D4D4D4] hover:bg-[#F5F5F5] text-[#292929]'
                   }`}
                 >
                   W przygotowaniu
                 </button>
                 <button
                   onClick={() => handleStatusChange(selectedOrder.orderNumber, 'ready')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all ${
+                  className={`px-4 py-2 rounded-md text-xs font-extrabold border transition-colors ${
                     selectedOrder.kitchenStatus === 'ready'
-                      ? 'bg-emerald-500 text-black'
-                      : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                      ? 'bg-[#008837] border-[#008837] text-white'
+                      : 'bg-white border-[#008837] text-[#008837] hover:bg-[#E6F4EA]'
                   }`}
                 >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Gotowe do odbioru</span>
+                  Gotowe do odbioru
                 </button>
                 <button
                   onClick={() => handleStatusChange(selectedOrder.orderNumber, 'completed')}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all ${
+                  className={`px-4 py-2 rounded-md text-xs font-extrabold border transition-colors ${
                     selectedOrder.kitchenStatus === 'completed'
-                      ? 'bg-white text-black'
-                      : 'bg-white/10 hover:bg-white/20 text-gray-300'
+                      ? 'bg-[#111] border-[#111] text-white'
+                      : 'bg-white border-[#D4D4D4] hover:bg-[#F5F5F5] text-[#292929]'
                   }`}
                 >
                   Wydane
